@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stark Mission Control - Confirmation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;800&amp;family=Plus+Jakarta+Sans:wght@400;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#b6ebff",
+                        "on-tertiary-container": "#6c4700",
+                        "error-container": "#93000a",
+                        "inverse-surface": "#e5e1e4",
+                        "surface-dim": "#131315",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "surface-container-high": "#2a2a2c",
+                        "secondary": "#ffcf8f",
+                        "surface-charcoal": "#121316",
+                        "surface-bright": "#39393b",
+                        "surface-container-low": "#1c1b1d",
+                        "on-primary-container": "#00566a",
+                        "outline": "#859399",
+                        "on-surface": "#e5e1e4",
+                        "tertiary": "#ffd79f",
+                        "on-secondary": "#452b00",
+                        "on-primary-fixed": "#001f28",
+                        "grid-line": "rgba(255, 255, 255, 0.03)",
+                        "surface-tint": "#47d6ff",
+                        "on-error": "#690005",
+                        "inverse-primary": "#00677f",
+                        "technical-gray": "#2a2d33",
+                        "on-secondary-container": "#684300",
+                        "tertiary-container": "#ffb229",
+                        "glass-border": "rgba(0, 210, 255, 0.2)",
+                        "surface-container-highest": "#353437",
+                        "on-secondary-fixed-variant": "#624000",
+                        "primary": "#a5e7ff",
+                        "error": "#ffb4ab",
+                        "secondary-container": "#feaa00",
+                        "tertiary-fixed-dim": "#ffba4a",
+                        "on-secondary-fixed": "#291800",
+                        "on-tertiary-fixed": "#291800",
+                        "tertiary-fixed": "#ffddb1",
+                        "secondary-fixed": "#ffddb3",
+                        "surface": "#131315",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#201f21",
+                        "outline-variant": "#3c494e",
+                        "on-primary": "#003543",
+                        "on-surface-variant": "#bbc9cf",
+                        "background": "#131315",
+                        "primary-container": "#00d2ff",
+                        "inverse-on-surface": "#313032",
+                        "primary-fixed-dim": "#47d6ff",
+                        "on-tertiary": "#442b00",
+                        "on-background": "#e5e1e4",
+                        "on-primary-fixed-variant": "#004e60",
+                        "surface-container-lowest": "#0e0e10",
+                        "surface-variant": "#353437",
+                        "secondary-fixed-dim": "#ffb950",
+                        "stark-amber": "#ffb229" // Explicit mapping for Stark Amber based on tertiary-container
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "container-max": "1440px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["JetBrains Mono"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "data-mono": ["JetBrains Mono"],
+                        "metadata": ["JetBrains Mono"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "data-mono": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "metadata": ["10px", { "lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        
+        .glow-amber {
+            box-shadow: 0 0 12px rgba(255, 178, 41, 0.4);
+        }
+        
+        .scan-line {
+            background: linear-gradient(90deg, transparent, rgba(255, 178, 41, 0.8), transparent);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+<!-- Background context (mocking a command center view) -->
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none" data-alt="A dark, high-tech command center interface resembling an aerospace heads-up display. Neon blue and stark amber data points glow faintly against a deep black background with a subtle technical grid. The atmosphere is intense, focused, and precise, highlighting complex tactical telemetry modules." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDUcDHEc-mjqasbz14r5gq0P5BgkD31qNp97kulzu0Cbuy1YcEpBo1RYN9zbkN1VfMUFqgRDU5K42saOveWJTL2KFxnQ3OpehqdXT7ARysra-w-oNuRydckKWuenNPyMHftYBIX3oCe9OKc0ig9NdZYfbCJ6vm43CaovSzMtMU3ws4AQ9EwrznFDBashs2A5DSSNVBbf38DlphVlJcPRwvpLZ2O6Ye84gYYuRnmYiJ1l7INCHQ5kPM8')"></div>
+<!-- Overlay backdrop -->
+<div class="fixed inset-0 bg-surface-lowest/80 backdrop-blur-xl z-40 transition-opacity"></div>
+<!-- Confirmation Dialog -->
+<main class="relative z-50 w-full max-w-md bg-surface-charcoal border border-outline-variant shadow-[0_0_30px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden">
+<!-- Header / Scan Line -->
+<div class="h-1 w-full scan-line"></div>
+<div class="p-6 md:p-8 flex flex-col items-center text-center">
+<!-- Icon -->
+<div class="w-16 h-16 rounded-full border border-tertiary-container/30 bg-tertiary-container/10 flex items-center justify-center mb-6 glow-amber">
+<span class="material-symbols-outlined text-tertiary-container" style="font-size: 32px; font-variation-settings: 'FILL' 1;">
+                    warning
+                </span>
+</div>
+<!-- Content -->
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2 tracking-tight">
+                CONFIRM_TERMINATION
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-4 max-w-sm">
+                Are you sure you want to remove <span class="font-data-mono text-data-mono text-tertiary-container border-b border-tertiary-container/50">STARK_NODE_7X</span>?
+            </p>
+<div class="font-label-caps text-label-caps text-error bg-error/10 px-3 py-1.5 border border-error/20 mb-8 flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 14px;">bolt</span>
+                Action permanent
+            </div>
+<!-- Metadata footer inside dialog -->
+<div class="w-full font-metadata text-metadata text-outline text-left mb-6 flex justify-between border-t border-outline-variant/50 pt-4">
+<span>REQ_ID: 0x9A4B.F21</span>
+<span>AUTH_LEVEL: OMEGA</span>
+</div>
+<!-- Actions -->
+<div class="flex flex-col sm:flex-row w-full gap-4">
+<button class="flex-1 font-label-caps text-label-caps text-primary border border-primary/50 hover:bg-primary/5 hover:border-primary transition-colors py-3 px-4 flex items-center justify-center gap-2 group focus:outline-none focus:ring-1 focus:ring-primary" type="button">
+<span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform" style="font-size: 16px;">close</span>
+                    CANCEL
+                </button>
+<button class="flex-1 font-label-caps text-label-caps bg-tertiary-container text-on-tertiary-container hover:bg-tertiary transition-colors py-3 px-4 flex items-center justify-center gap-2 glow-amber active:scale-95 focus:outline-none focus:ring-2 focus:ring-tertiary-container" type="button">
+                    PERMANENTLY_TERMINATE
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" style="font-size: 16px; font-variation-settings: 'FILL' 1;">delete_forever</span>
+</button>
+</div>
+</div>
+</main>
+</body></html>
+
+<!-- Confirm Termination | Stark Mission Control -->

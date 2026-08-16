@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>JARVIS Command Center</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#859399",
+                        "surface-tint": "#47d6ff",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#313032",
+                        "surface-dim": "#131315",
+                        "surface-container-high": "#2a2a2c",
+                        "on-primary-fixed": "#001f28",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#442b00",
+                        "on-primary-container": "#00566a",
+                        "on-primary-fixed-variant": "#004e60",
+                        "primary-fixed": "#b6ebff",
+                        "surface-container-lowest": "#0e0e10",
+                        "on-secondary": "#452b00",
+                        "primary-container": "#00d2ff",
+                        "secondary-container": "#feaa00",
+                        "on-primary": "#003543",
+                        "surface-container": "#201f21",
+                        "technical-gray": "#2a2d33",
+                        "on-tertiary-fixed": "#291800",
+                        "surface-container-highest": "#353437",
+                        "primary": "#a5e7ff",
+                        "on-error-container": "#ffdad6",
+                        "grid-line": "rgba(255, 255, 255, 0.03)",
+                        "on-secondary-fixed-variant": "#624000",
+                        "on-background": "#e5e1e4",
+                        "tertiary": "#ffd79f",
+                        "inverse-surface": "#e5e1e4",
+                        "surface-charcoal": "#121316",
+                        "primary-fixed-dim": "#47d6ff",
+                        "on-tertiary-container": "#6c4700",
+                        "outline-variant": "#3c494e",
+                        "tertiary-fixed": "#ffddb1",
+                        "on-surface": "#e5e1e4",
+                        "tertiary-container": "#ffb229",
+                        "on-secondary-fixed": "#291800",
+                        "tertiary-fixed-dim": "#ffba4a",
+                        "secondary-fixed": "#ffddb3",
+                        "secondary": "#ffcf8f",
+                        "on-secondary-container": "#684300",
+                        "inverse-primary": "#00677f",
+                        "error": "#ffb4ab",
+                        "background": "#131315",
+                        "surface-variant": "#353437",
+                        "glass-border": "rgba(0, 210, 255, 0.2)",
+                        "surface-bright": "#39393b",
+                        "secondary-fixed-dim": "#ffb950",
+                        "on-surface-variant": "#bbc9cf",
+                        "surface": "#131315",
+                        "surface-container-low": "#1c1b1d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1440px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "32px",
+                        "gutter": "16px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "data-mono": ["JetBrains Mono"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "metadata": ["JetBrains Mono"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "data-mono": ["13px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "metadata": ["10px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Precision Grid Background */
+        .grid-bg {
+            background-size: 32px 32px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        
+        /* Subtle glow utilities */
+        .glow-border {
+            box-shadow: 0 0 4px rgba(0, 210, 255, 0.2);
+        }
+        .glow-border-active {
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg min-h-screen overflow-hidden selection:bg-primary selection:text-on-primary">
+<!-- Background Layers -->
+<div class="fixed inset-0 grid-bg z-0 pointer-events-none"></div>
+<!-- STITCH_THREEJS_START:ANIMATION_12 class="absolute inset-0 w-full h-full z-0 opacity-30 pointer-events-none mix-blend-screen" -->
+<div class="absolute inset-0 w-full h-full z-0 opacity-30 pointer-events-none mix-blend-screen" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_12" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_12');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const width = container.clientWidth || window.innerWidth;
+const height = container.clientHeight || window.innerHeight;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+camera.position.z = 5;
+
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setSize(width, height);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
+
+const particleCount = 1500;
+const positions = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
+
+const colorCyan = new THREE.Color(0x00d2ff);
+const colorAmber = new THREE.Color(0xffab00);
+const colorWhite = new THREE.Color(0xffffff);
+
+for (let i = 0; i < particleCount; i++) {
+    // Position
+    positions[i * 3] = (Math.random() - 0.5) * 15;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 15;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 15;
+
+    // Color
+    let pColor;
+    const r = Math.random();
+    if (r < 0.7) {
+        pColor = colorCyan;
+    } else if (r < 0.9) {
+        pColor = colorWhite;
+    } else {
+        pColor = colorAmber;
+    }
+    
+    colors[i * 3] = pColor.r;
+    colors[i * 3 + 1] = pColor.g;
+    colors[i * 3 + 2] = pColor.b;
+}
+
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+const material = new THREE.PointsMaterial({
+    size: 0.02,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.4,
+    sizeAttenuation: true
+});
+
+const particles = new THREE.Points(geometry, material);
+scene.add(particles);
+
+function animate() {
+    requestAnimationFrame(animate);
+    particles.rotation.y += 0.0005;
+    particles.rotation.x += 0.0002;
+    renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+    const w = container.clientWidth || window.innerWidth;
+    const h = container.clientHeight || window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+});
+
+animate();
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_12 -->
+<!-- TopNavBar from JSON -->
+<header class="bg-surface-charcoal/80 dark:bg-surface-charcoal/80 fixed top-0 w-full z-50 backdrop-blur-xl border-b border-glass-border shadow-[0_0_15px_rgba(0,210,255,0.1)]">
+<div class="flex justify-between items-center w-full px-margin-desktop py-unit max-w-container-max mx-auto h-16">
+<!-- Brand -->
+<div class="flex items-center gap-4">
+<span class="font-display-lg text-headline-lg-mobile md:text-headline-lg tracking-tighter text-primary animate-pulse">
+                    A.R.K.O.S_HUD
+                </span>
+</div>
+<!-- Search (Right aligned as per JSON) -->
+<div class="hidden md:flex items-center gap-6">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="bg-surface-dim border border-outline-variant focus:border-primary text-data-mono font-data-mono rounded-DEFAULT pl-10 pr-4 py-1.5 focus:ring-0 focus:outline-none w-64 transition-all focus:shadow-[0_0_8px_rgba(0,210,255,0.3)] placeholder:text-outline-variant text-primary" placeholder="SEARCH_DATABASE..." type="text"/>
+</div>
+<!-- Trailing Icon Actions -->
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-DEFAULT text-on-surface-variant hover:text-primary-container hover:bg-white/5 transition-colors active:scale-95 duration-75">
+<span class="material-symbols-outlined">settings_input_component</span>
+</button>
+<button class="p-2 rounded-DEFAULT text-on-surface-variant hover:text-primary-container hover:bg-white/5 transition-colors active:scale-95 duration-75">
+<span class="material-symbols-outlined">terminal</span>
+</button>
+<button class="p-2 rounded-DEFAULT text-on-surface-variant hover:text-primary-container hover:bg-white/5 transition-colors active:scale-95 duration-75 relative">
+<span class="material-symbols-outlined">sensors</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary-container rounded-full animate-ping"></span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- Layout Container -->
+<div class="flex h-screen pt-16">
+<!-- SideNavBar from JSON (Hidden on Mobile as per prompt guidelines for high-fidelity dashboards, normally would transform, but strictly following desktop layout for this complex view) -->
+<nav class="hidden md:flex flex-col bg-surface-charcoal/90 dark:bg-surface-charcoal/90 fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 backdrop-blur-2xl z-40 border-r border-glass-border pt-8 pb-margin-desktop">
+<!-- Header/Profile -->
+<div class="px-6 mb-8 flex items-center gap-4 group cursor-pointer hover:bg-technical-gray/50 hover:text-primary-container transition-all">
+<div class="relative w-12 h-12 rounded-full border border-primary flex items-center justify-center overflow-hidden glow-border group-hover:shadow-[0_0_8px_rgba(0,210,255,0.4)]">
+<img alt="SYSTEM_OPERATOR_BIO_SCAN" class="w-full h-full object-cover mix-blend-screen opacity-80" data-alt="A highly detailed, biometric wireframe scan of a human face in glowing cyan lines against a deep black background. The image should look like an authentic heads-up display element from a sci-fi command center, emphasizing high-tech security and digital precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyl43nlpkFmdB0pnZgkVZcYug7rBfRqJ76qZkNJsdYdWJaGHgaeNFpF5vWrsu-utp2kW8vPdDzdQSloeElQnV4nhtjQYS5XjsJztr3jvHwipZx27T341I8RDSfw2-OP0Q4li_-FKZAQeUCWM1ncN_RMB_Dx3Fu7B3oorM8TMlc2Czk3FXhsK8jqHQtX_W2jZnhoexhx3sCX9pS7F5lBJv9-1hIxEpodxSans8O_BtzheKB1m0YlSD_"/>
+</div>
+<div>
+<h2 class="font-data-mono text-data-mono text-primary font-bold">STRAT_OS</h2>
+<p class="font-metadata text-metadata text-outline">V.2.0.4_STABLE</p>
+</div>
+</div>
+<!-- Main Tabs -->
+<div class="flex-1 space-y-1">
+<a class="flex items-center gap-4 text-outline py-3 px-6 hover:text-on-surface-variant hover:bg-technical-gray/50 hover:text-primary-container transition-all group-hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined">lan</span>
+<span class="font-data-mono text-data-mono">NETWORK</span>
+</a>
+<!-- Active Tab Logic: Setting OPERATIONS as active for this Overview dashboard -->
+<a class="flex items-center gap-4 text-primary bg-primary/10 border-l-2 border-primary py-3 px-6 shadow-[inset_4px_0_10px_rgba(0,210,255,0.1)] group-hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings_heart</span>
+<span class="font-data-mono text-data-mono">OPERATIONS</span>
+</a>
+<a class="flex items-center gap-4 text-outline py-3 px-6 hover:text-on-surface-variant hover:bg-technical-gray/50 hover:text-primary-container transition-all group-hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined">radar</span>
+<span class="font-data-mono text-data-mono">STRATEGY</span>
+</a>
+<a class="flex items-center gap-4 text-outline py-3 px-6 hover:text-on-surface-variant hover:bg-technical-gray/50 hover:text-primary-container transition-all group-hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined">monitor_heart</span>
+<span class="font-data-mono text-data-mono">VITAL_SIGNS</span>
+</a>
+<a class="flex items-center gap-4 text-outline py-3 px-6 hover:text-on-surface-variant hover:bg-technical-gray/50 hover:text-primary-container transition-all group-hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-data-mono text-data-mono">ARCHIVE</span>
+</a>
+</div>
+<!-- CTA -->
+<div class="px-6 mb-8">
+<button class="w-full py-2 border border-primary text-primary font-data-mono text-data-mono rounded-DEFAULT hover:bg-primary hover:text-on-primary transition-colors flex justify-center items-center gap-2 glow-border">
+<span class="material-symbols-outlined text-sm">sync</span>
+                    EXECUTE_SYNC
+                </button>
+</div>
+<!-- Footer Tabs -->
+<div class="space-y-1 border-t border-glass-border/50 pt-4">
+<a class="flex items-center gap-4 text-outline py-3 px-6 hover:text-on-surface-variant hover:bg-technical-gray/50 hover:text-primary-container transition-all" href="#">
+<span class="material-symbols-outlined text-sm">query_stats</span>
+<span class="font-data-mono text-data-mono">DIAGNOSTICS</span>
+</a>
+<a class="flex items-center gap-4 text-outline py-3 px-6 hover:text-on-surface-variant hover:bg-error/20 hover:text-error transition-all group" href="#">
+<span class="material-symbols-outlined text-sm group-hover:text-error">power_settings_new</span>
+<span class="font-data-mono text-data-mono">LOGOUT</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area (The Canvas) -->
+<main class="flex-1 md:ml-64 relative z-10 overflow-y-auto p-margin-mobile md:p-margin-desktop scrollbar-hide">
+<div class="max-w-container-max mx-auto space-y-gutter">
+<!-- Personalized Greeting Module -->
+<section class="bg-surface-charcoal/80 backdrop-blur-xl border border-glass-border rounded-lg p-6 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-primary tracking-tight mb-1">
+                                Welcome back, Operator-01.
+                            </h1>
+<div class="flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="font-data-mono text-data-mono text-primary-fixed-dim uppercase tracking-wider">
+                                    System Status: <span class="text-primary font-bold">OPTIMAL</span>
+</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-metadata text-metadata text-outline">SECURE_LINK_ESTABLISHED</p>
+<p class="font-data-mono text-data-mono text-on-surface-variant mt-1">LATENCY: 12ms</p>
+</div>
+</div>
+</section>
+<!-- Technical Metrics Grid -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Metric 1 -->
+<div class="bg-surface-charcoal/60 backdrop-blur-md border border-glass-border rounded-lg p-4 hover:border-primary/50 transition-colors group relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-caps text-label-caps text-outline group-hover:text-primary transition-colors">TOTAL_ASSETS</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">groups</span>
+</div>
+<div class="font-data-mono text-[32px] leading-tight text-on-surface font-bold">
+                            1,204
+                        </div>
+<div class="mt-2 h-1 w-full bg-surface-dim rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[85%]"></div>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-surface-charcoal/60 backdrop-blur-md border border-glass-border rounded-lg p-4 hover:border-primary/50 transition-colors group relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-caps text-label-caps text-outline group-hover:text-primary transition-colors">TOTAL_MISSIONS</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">route</span>
+</div>
+<div class="font-data-mono text-[32px] leading-tight text-on-surface font-bold">
+                            8,942
+                        </div>
+<div class="mt-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-primary">trending_up</span>
+<span class="font-metadata text-metadata text-primary">+12% THIS_CYCLE</span>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-surface-charcoal/60 backdrop-blur-md border border-glass-border rounded-lg p-4 hover:border-primary/50 transition-colors group relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-caps text-label-caps text-outline group-hover:text-primary transition-colors">ACTIVE_OPS</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">my_location</span>
+</div>
+<div class="font-data-mono text-[32px] leading-tight text-primary font-bold">
+                            03
+                        </div>
+<div class="mt-2 flex gap-1">
+<div class="h-1 flex-1 bg-primary rounded-full animate-pulse"></div>
+<div class="h-1 flex-1 bg-primary rounded-full animate-pulse delay-75"></div>
+<div class="h-1 flex-1 bg-primary rounded-full animate-pulse delay-150"></div>
+<div class="h-1 flex-1 bg-surface-dim rounded-full"></div>
+</div>
+</div>
+<!-- Metric 4 -->
+<div class="bg-surface-charcoal/60 backdrop-blur-md border border-glass-border rounded-lg p-4 hover:border-secondary-container/50 transition-colors group relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-secondary-container/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="font-label-caps text-label-caps text-outline group-hover:text-secondary-container transition-colors">PENDING_PROTOCOLS</span>
+<span class="material-symbols-outlined text-outline group-hover:text-secondary-container transition-colors">warning</span>
+</div>
+<div class="font-data-mono text-[32px] leading-tight text-secondary-container font-bold">
+                            12
+                        </div>
+<div class="mt-2 flex items-center gap-2">
+<span class="font-metadata text-metadata text-secondary-container">REQUIRES_AUTHORIZATION</span>
+</div>
+</div>
+</section>
+<!-- Recent Intelligence (Holographic Grid Table) -->
+<section class="bg-surface-charcoal/80 backdrop-blur-xl border border-glass-border rounded-lg overflow-hidden">
+<div class="px-6 py-4 border-b border-glass-border/50 flex justify-between items-center bg-technical-gray/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">view_list</span>
+<h3 class="font-label-caps text-label-caps text-primary tracking-widest">RECENT_INTELLIGENCE</h3>
+</div>
+<button class="font-metadata text-metadata text-outline hover:text-primary transition-colors flex items-center gap-1">
+                            VIEW_ALL <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-glass-border/30 bg-surface-dim/50">
+<th class="px-6 py-3 font-metadata text-metadata text-outline font-normal">OP_ID</th>
+<th class="px-6 py-3 font-metadata text-metadata text-outline font-normal">OPERATION_TITLE</th>
+<th class="px-6 py-3 font-metadata text-metadata text-outline font-normal">STATUS</th>
+<th class="px-6 py-3 font-metadata text-metadata text-outline font-normal">ASSIGNED_OPERATIVES</th>
+<th class="px-6 py-3 font-metadata text-metadata text-outline font-normal text-right">LAST_UPDATE</th>
+</tr>
+</thead>
+<tbody class="font-data-mono text-data-mono text-on-surface-variant">
+<!-- Row 1 -->
+<tr class="border-b border-glass-border/10 hover:bg-white/[0.02] transition-colors group">
+<td class="px-6 py-4 text-primary group-hover:text-primary-container transition-colors">#AX-992</td>
+<td class="px-6 py-4 text-on-surface font-medium">OMEGA_PROTOCOL</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-DEFAULT border border-primary text-primary bg-primary/10 text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> ACTIVE
+                                        </span>
+</td>
+<td class="px-6 py-4">STARK, ROMANOFF</td>
+<td class="px-6 py-4 text-right text-outline">T-00:02:14</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-glass-border/10 hover:bg-white/[0.02] transition-colors group">
+<td class="px-6 py-4 text-primary group-hover:text-primary-container transition-colors">#NX-014</td>
+<td class="px-6 py-4 text-on-surface font-medium">NEBULA_SWEEP</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-DEFAULT border border-secondary-container text-secondary-container bg-secondary-container/10 text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span> STANDBY
+                                        </span>
+</td>
+<td class="px-6 py-4">DANVERS</td>
+<td class="px-6 py-4 text-right text-outline">T-01:45:00</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-glass-border/10 hover:bg-white/[0.02] transition-colors group">
+<td class="px-6 py-4 text-primary group-hover:text-primary-container transition-colors">#ZX-771</td>
+<td class="px-6 py-4 text-on-surface font-medium">SHIELD_INTEGRATION</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-DEFAULT border border-outline text-outline bg-surface-dim text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span> COMPLETE
+                                        </span>
+</td>
+<td class="px-6 py-4">ROGERS, WILSON</td>
+<td class="px-6 py-4 text-right text-outline">T-12:00:00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>
+
+<!-- System Overview | Stark Mission Control -->

@@ -1,200 +1,230 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { heroService } from '../services/heroService';
-import type { Hero } from '../services/heroService';
-import { LoadingState } from '../components/ui/LoadingState';
-import { EmptyState } from '../components/ui/EmptyState';
-import { useAuth } from '../context/AuthContext';
+import React from 'react';
 
 export const HeroDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [hero, setHero] = useState<Hero | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchHero = async () => {
-      if (!id) return;
-      try {
-        const data = await heroService.getById(Number(id));
-        setHero(data);
-      } catch (error) {
-        console.error("Error fetching hero", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchHero();
-  }, [id]);
-
-  if (loading) return <LoadingState message="Accediendo a archivo de operativo..." />;
-  if (!hero) return (
-    <EmptyState 
-      title="OPERATIVO NO ENCONTRADO" 
-      description="El identificador proporcionado no existe en los registros." 
-      action={
-        <button 
-          onClick={() => navigate('/heroes')} 
-          className="border border-primary text-primary px-4 py-2 font-label-caps text-label-caps hover:bg-primary/10 transition-colors"
-        >
-          VOLVER
-        </button>
-      } 
-    />
-  );
-
-  const missions = hero.missions || [];
-  const completedMissions = missions.filter(m => m.estado === 'COMPLETADA').length;
-  const successRate = missions.length > 0 ? Math.round((completedMissions / missions.length) * 100) : 0;
-
   return (
-    <div className="max-w-container-max mx-auto space-y-gutter pb-8">
-      {/* Header / Top actions */}
-      <div className="flex items-center justify-between">
-        <button 
-          onClick={() => navigate('/heroes')}
-          className="flex items-center gap-2 text-outline hover:text-primary transition-colors bg-transparent border-none"
-        >
-          <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-          <span className="font-label-caps text-label-caps">VOLVER AL DIRECTORIO</span>
-        </button>
-        {useAuth().user?.role === 'ADMIN' && (
-          <button 
-            onClick={() => navigate(`/heroes/${hero.id}/edit`)}
-            className="flex items-center gap-2 bg-white/5 border border-white/10 text-on-surface px-4 py-2 rounded-DEFAULT hover:bg-white/10 hover:border-white/20 transition-all font-label-caps text-label-caps"
-          >
-            <span className="material-symbols-outlined text-[16px]">edit</span>
-            ACTUALIZAR PROTOCOLO
-          </button>
-        )}
-      </div>
+    <>
+      <style>
+        {`
+          .precision-grid {
+              background-image: 
+                  linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+              background-size: 32px 32px;
+          }
+          .hud-border {
+              border: 1px solid var(--glass-border, rgba(0, 210, 255, 0.2));
+              box-shadow: inset 0 0 10px rgba(0, 210, 255, 0.05);
+          }
+          .hud-border-active {
+              border: 1px solid #47d6ff;
+              box-shadow: 0 0 4px rgba(0, 210, 255, 0.4), inset 0 0 10px rgba(0, 210, 255, 0.1);
+          }
+          .text-glow {
+              text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
+          }
+          .alert-glow {
+              text-shadow: 0 0 8px rgba(254, 170, 0, 0.6);
+          }
+          .scan-line {
+              background: linear-gradient(to right, transparent, rgba(0, 210, 255, 0.5), transparent);
+              height: 1px;
+              width: 100%;
+          }
+          @keyframes scan {
+              0% { top: 0%; opacity: 0; }
+              10% { opacity: 1; }
+              90% { opacity: 1; }
+              100% { top: 100%; opacity: 0; }
+          }
+        `}
+      </style>
 
-      {/* Hero Profile Main Info */}
-      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-gutter bg-surface-charcoal/80 backdrop-blur-xl border border-glass-border rounded-lg p-6 md:p-8">
+      {/* Precision Grid Overlay */}
+      <div className="fixed inset-0 precision-grid -z-10 pointer-events-none"></div>
+      
+      {/* Main Container */}
+      <div className="max-w-container-max mx-auto flex flex-col lg:flex-row gap-6 pb-24">
         
-        {/* Photo and basic info */}
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="w-48 h-48 rounded-lg bg-white/5 border-2 border-white/10 flex items-center justify-center overflow-hidden shrink-0">
-            {hero.imagen_url ? (
-              <img src={hero.imagen_url} alt={hero.nombre} className="w-full h-full object-cover" />
-            ) : (
-              <span className="material-symbols-outlined text-outline opacity-50" style={{ fontSize: '64px' }}>shield</span>
-            )}
-          </div>
-          <div>
-            <h2 className="font-headline-lg-mobile md:font-headline-lg text-on-surface tracking-tight mb-1">{hero.nombre}</h2>
-            <span className="font-metadata text-metadata text-outline">{hero.nombre_real || 'IDENTIDAD RESTRINGIDA'}</span>
-          </div>
-          <span className={`font-label-caps px-3 py-1 rounded-full border text-[11px] ${hero.estado.toLowerCase() === 'activo' ? 'border-primary text-primary bg-primary/10' : 'border-outline text-outline bg-surface-dim'}`}>
-            STATUS: {hero.estado}
-          </span>
-        </div>
-
-        {/* Detailed Stats */}
-        <div className="flex flex-col gap-6">
-          
-          <div>
-            <h3 className="font-label-caps text-label-caps text-primary tracking-widest border-b border-glass-border/50 pb-2 mb-4">
-              PERFIL TÁCTICO
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-black/20 p-4 rounded-DEFAULT">
-                <span className="font-label-caps text-[11px] text-outline block mb-2">PODER PRINCIPAL</span>
-                <span className="font-data-mono text-primary">{hero.poder_principal}</span>
+        {/* Left Column: Holographic Profile */}
+        <div className="w-full lg:w-5/12 flex flex-col gap-6">
+          <div className="relative w-full aspect-[3/4] bg-surface-charcoal/80 backdrop-blur-md rounded-lg hud-border overflow-hidden group">
+            {/* Scan Line Animation */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-20 flex flex-col justify-between p-4">
+              <div className="flex justify-between items-start">
+                <span className="font-metadata text-metadata text-primary bg-primary/10 px-2 py-1 rounded-DEFAULT border border-glass-border">ID: AX-7749-V</span>
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary/30"></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary/30"></div>
+                </div>
               </div>
-              <div className="bg-black/20 p-4 rounded-DEFAULT">
-                <span className="font-label-caps text-[11px] text-outline block mb-2">NIVEL DE PODER REGISTRADO</span>
-                <div className="flex items-center gap-2 text-primary">
-                  <span className="material-symbols-outlined text-[18px]">activity_zone</span>
-                  <span className="font-data-mono text-xl font-bold">{hero.nivel_poder}</span>
+              <div className="flex justify-between items-end">
+                <div className="font-data-mono text-data-mono text-on-surface-variant">
+                  CLASS: <span className="text-primary">INFILTRATOR</span>
+                </div>
+                <span className="material-symbols-outlined text-primary/50 text-xl group-hover:text-primary transition-colors">fingerprint</span>
+              </div>
+            </div>
+            
+            <div className="absolute top-1/4 left-0 w-full scan-line z-20 animate-[scan_3s_ease-in-out_infinite]"></div>
+            <img 
+              alt="Operative Profile" 
+              className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-luminosity filter contrast-125" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9VRvV6dkrZIwUxmVumjm_bnhapt2aUbmMd7OTf4RapUAx6f1teITuMDmYqQBm9WGvF5ZRhECCH1Ornn_1GegyXOiGsORjM-YUnFl2afkzzfEDDDjLkUJ2UezbWRLzGLzKzsuhg8pRLuc7p8ycP8a2CCQWBIp3ERTO5k_3rDIMrC9j1Z0Dqz8PBQSLLF1wHMJqzExA7q9HUuaJCbABVp_WAzoOIrbehz8X3oyYB8lWyNFPhIvLbGgb" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-surface-charcoal via-transparent to-surface-charcoal/40 z-10"></div>
+          </div>
+          
+          {/* Threat Assessment Card */}
+          <div className="bg-surface-charcoal/90 backdrop-blur-lg rounded-lg hud-border p-6 flex flex-col gap-4">
+            <div className="flex items-center gap-2 border-b border-glass-border pb-2">
+              <span className="material-symbols-outlined text-secondary-container text-sm">warning</span>
+              <h3 className="font-data-mono text-data-mono text-secondary-container">THREAT_ASSESSMENT</h3>
+            </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <div className="font-display-lg text-headline-lg-mobile md:text-headline-lg text-on-surface alert-glow">LEVEL_ALPHA</div>
+                <div className="font-metadata text-metadata text-on-surface-variant mt-1">LETHAL_RESPONSE_AUTHORIZED</div>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <div className="text-secondary-container font-data-mono text-data-mono">98.4%</div>
+                <div className="w-24 h-1 bg-surface-container-highest rounded-full overflow-hidden border border-glass-border">
+                  <div className="h-full bg-secondary-container w-[98.4%]"></div>
                 </div>
               </div>
             </div>
           </div>
-
-          <div>
-            <h3 className="font-label-caps text-label-caps text-secondary-container tracking-widest border-b border-glass-border/50 pb-2 mb-4">
-              ESTADÍSTICAS DE CAMPO
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-black/20 p-4 rounded-DEFAULT text-center">
-                <span className="font-data-mono text-3xl font-bold text-primary block mb-1">{missions.length}</span>
-                <span className="font-metadata text-metadata text-outline">MISIONES TOTALES</span>
+        </div>
+        
+        {/* Right Column: Data & Actions */}
+        <div className="w-full lg:w-7/12 flex flex-col gap-6">
+          {/* Header Area */}
+          <div className="flex flex-col gap-2 border-b border-glass-border pb-4">
+            <div className="font-data-mono text-data-mono text-primary flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+              OPERATIVE_PROFILE
+            </div>
+            <h1 className="font-display-lg text-[40px] md:text-display-lg text-on-surface leading-none tracking-tight">
+              Kaelen <span className="text-primary text-glow">"GHOST"</span> Vance
+            </h1>
+            <div className="font-body-sm text-body-sm text-on-surface-variant max-w-2xl mt-2">
+              Elite specialist in deep-cover infiltration and tactical sabotage. Extensive cybernetic augments localized to neural processing and optical cloaking arrays. Currently unassigned.
+            </div>
+          </div>
+          
+          {/* Grid Layout for Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Bio Stats */}
+            <div className="bg-surface-charcoal/80 backdrop-blur-lg rounded-lg hud-border p-5 flex flex-col gap-4">
+              <div className="flex items-center gap-2 border-b border-glass-border pb-2">
+                <span className="material-symbols-outlined text-primary text-sm">monitor_heart</span>
+                <h3 className="font-data-mono text-data-mono text-primary">BIO_STATS</h3>
               </div>
-              <div className="bg-black/20 p-4 rounded-DEFAULT text-center">
-                <span className="font-data-mono text-3xl font-bold text-[#4ade80] block mb-1">{completedMissions}</span>
-                <span className="font-metadata text-metadata text-outline">COMPLETADAS</span>
+              <div className="flex flex-col gap-3">
+                {/* Stat Row */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between font-metadata text-metadata">
+                    <span className="text-on-surface-variant">NEURAL_SYNC</span>
+                    <span className="text-primary">92.4%</span>
+                  </div>
+                  <div className="w-full h-1 bg-surface-container-highest border border-glass-border/50">
+                    <div className="h-full bg-primary w-[92.4%]"></div>
+                  </div>
+                </div>
+                {/* Stat Row */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between font-metadata text-metadata">
+                    <span className="text-on-surface-variant">CLOAKING_RESERVE</span>
+                    <span className="text-primary">85.0%</span>
+                  </div>
+                  <div className="w-full h-1 bg-surface-container-highest border border-glass-border/50">
+                    <div className="h-full bg-primary w-[85%]"></div>
+                  </div>
+                </div>
+                {/* Stat Row */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between font-metadata text-metadata">
+                    <span className="text-on-surface-variant">CORTICAL_STRESS</span>
+                    <span className="text-secondary-container">41.2%</span>
+                  </div>
+                  <div className="w-full h-1 bg-surface-container-highest border border-glass-border/50">
+                    <div className="h-full bg-secondary-container w-[41.2%]"></div>
+                  </div>
+                </div>
               </div>
-              <div className="bg-black/20 p-4 rounded-DEFAULT text-center">
-                <span className="font-data-mono text-3xl font-bold text-secondary-container block mb-1">{successRate}%</span>
-                <span className="font-metadata text-metadata text-outline">TASA DE ÉXITO</span>
+            </div>
+            
+            {/* Operational Status */}
+            <div className="bg-surface-charcoal/80 backdrop-blur-lg rounded-lg hud-border p-5 flex flex-col gap-4">
+              <div className="flex items-center gap-2 border-b border-glass-border pb-2">
+                <span className="material-symbols-outlined text-primary text-sm">radar</span>
+                <h3 className="font-data-mono text-data-mono text-primary">OPERATIONAL_STATUS</h3>
+              </div>
+              <div className="flex-1 flex flex-col justify-center gap-4">
+                <div className="flex items-center gap-3 bg-surface-container-lowest p-3 rounded-DEFAULT border border-glass-border/30">
+                  <div className="w-3 h-3 rounded-full bg-primary shadow-[0_0_8px_rgba(0,210,255,0.8)]"></div>
+                  <div>
+                    <div className="font-label-caps text-label-caps text-on-surface">READY_FOR_DEPLOYMENT</div>
+                    <div className="font-metadata text-metadata text-on-surface-variant">LOC: SECTOR_7G_ORBITAL</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 font-metadata text-metadata">
+                  <div className="bg-surface-container-highest p-2 rounded-DEFAULT border border-glass-border/20">
+                    <span className="text-on-surface-variant block mb-1">CLEARANCE</span>
+                    <span className="text-primary">LEVEL_5</span>
+                  </div>
+                  <div className="bg-surface-container-highest p-2 rounded-DEFAULT border border-glass-border/20">
+                    <span className="text-on-surface-variant block mb-1">LAST_SYNC</span>
+                    <span className="text-primary">04:22:11_UTC</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           
+          {/* Mission History */}
+          <div className="bg-surface-charcoal/80 backdrop-blur-lg rounded-lg hud-border flex flex-col flex-1 overflow-hidden">
+            <div className="flex items-center gap-2 border-b border-glass-border p-4 bg-surface-charcoal/90">
+              <span className="material-symbols-outlined text-primary text-sm">history</span>
+              <h3 className="font-data-mono text-data-mono text-primary">MISSION_HISTORY</h3>
+            </div>
+            <div className="p-4 flex flex-col gap-2 overflow-y-auto">
+              {/* History Item */}
+              <div className="flex items-center justify-between p-3 bg-surface-container-highest/50 border border-glass-border/30 rounded-DEFAULT hover:border-primary/50 hover:bg-white/5 transition-colors cursor-default group">
+                <div className="flex items-center gap-4">
+                  <div className="font-data-mono text-data-mono text-on-surface-variant w-20">OP_ECHO</div>
+                  <div className="font-body-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">Data Extraction Facility 4</div>
+                </div>
+                <div className="font-label-caps text-label-caps text-primary bg-primary/10 px-2 py-1 rounded-DEFAULT border border-primary/20">SUCCESS</div>
+              </div>
+              {/* History Item */}
+              <div className="flex items-center justify-between p-3 bg-surface-container-highest/50 border border-glass-border/30 rounded-DEFAULT hover:border-primary/50 hover:bg-white/5 transition-colors cursor-default group">
+                <div className="flex items-center gap-4">
+                  <div className="font-data-mono text-data-mono text-on-surface-variant w-20">OP_NULL</div>
+                  <div className="font-body-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">Target Neutralization</div>
+                </div>
+                <div className="font-label-caps text-label-caps text-primary bg-primary/10 px-2 py-1 rounded-DEFAULT border border-primary/20">SUCCESS</div>
+              </div>
+              {/* History Item */}
+              <div className="flex items-center justify-between p-3 bg-surface-container-highest/50 border border-glass-border/30 rounded-DEFAULT hover:border-primary/50 hover:bg-white/5 transition-colors cursor-default group">
+                <div className="flex items-center gap-4">
+                  <div className="font-data-mono text-data-mono text-on-surface-variant w-20">OP_VOID</div>
+                  <div className="font-body-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">Asset Recovery</div>
+                </div>
+                <div className="font-label-caps text-label-caps text-secondary-container bg-secondary-container/10 px-2 py-1 rounded-DEFAULT border border-secondary-container/20">PARTIAL</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Action Area */}
+          <div className="mt-auto flex justify-end pt-4 border-t border-glass-border">
+            <button className="bg-primary text-surface-container-lowest font-label-caps text-label-caps px-8 py-4 rounded-DEFAULT hover:bg-primary-container hover:shadow-[0_0_15px_rgba(0,210,255,0.6)] transition-all active:scale-95 flex items-center gap-2 group">
+              <span className="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform">rocket_launch</span>
+              DEPLOY_OPERATIVE
+            </button>
+          </div>
         </div>
       </div>
-
-      {/* Missions Log */}
-      <div>
-        <h3 className="font-label-caps text-label-caps text-on-surface tracking-widest mb-4">HISTORIAL DE MISIONES</h3>
-        <div className="bg-surface-charcoal/80 backdrop-blur-xl border border-glass-border rounded-lg overflow-hidden">
-          {missions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-glass-border/30 bg-surface-dim/50">
-                    <th className="px-6 py-3 font-metadata text-metadata text-outline font-normal">MISIÓN</th>
-                    <th className="px-6 py-3 font-metadata text-metadata text-outline font-normal">FECHA</th>
-                    <th className="px-6 py-3 font-metadata text-metadata text-outline font-normal">UBICACIÓN</th>
-                    <th className="px-6 py-3 font-metadata text-metadata text-outline font-normal">AMENAZA</th>
-                    <th className="px-6 py-3 font-metadata text-metadata text-outline font-normal text-right">ESTADO</th>
-                  </tr>
-                </thead>
-                <tbody className="font-data-mono text-data-mono text-on-surface-variant">
-                  {missions.map((mission: any) => (
-                    <tr key={mission.id} className="border-b border-glass-border/10 hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-primary text-[16px]">target</span>
-                          <span className="text-on-surface font-medium">{mission.titulo}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-outline">
-                          <span className="material-symbols-outlined text-[14px]">schedule</span>
-                          <span>{new Date(mission.fecha).toLocaleDateString()}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-outline">
-                          <span className="material-symbols-outlined text-[14px]">location_on</span>
-                          <span>{mission.ubicacion}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-outline">
-                          <span className="material-symbols-outlined text-[14px]">warning</span>
-                          <span>{mission.nivel_peligro}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-DEFAULT border text-[11px] ${mission.estado === 'COMPLETADA' ? 'border-[#4ade80] text-[#4ade80] bg-[#4ade80]/10' : mission.estado === 'ACTIVA' ? 'border-primary text-primary bg-primary/10' : 'border-outline text-outline bg-surface-dim'}`}>
-                          {mission.estado}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="p-8 text-center text-outline">
-              <span className="font-data-mono">No hay registros de misiones para este operativo.</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    </>
   );
 };

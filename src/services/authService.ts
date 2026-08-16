@@ -1,4 +1,3 @@
-import { api } from './api';
 
 export interface User {
   id: number;
@@ -14,19 +13,24 @@ export interface LoginResponse {
 
 export const authService = {
   login: async (credentials: { email: string; password: string }) => {
-    const response = await api.post<LoginResponse>('/login', credentials);
-    return response.data;
+    // Mock login delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    if (credentials.email === 'aaron' && credentials.password === '1234') {
+      return {
+        access_token: 'mock-token-xyz',
+        user: { id: 1, name: 'Aaron', email: 'aaron@stark.com', role: 'ADMIN' as const }
+      };
+    }
+    throw new Error('Invalid credentials');
   },
   
   logout: async () => {
-    const response = await api.post('/logout');
-    return response.data;
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return { success: true };
   },
   
   getMe: async () => {
-    const response = await api.get<User>('/me'); // or /auth/me depending on backend setup
-    // Based on the Laravel routes we saw earlier, login/register/logout are public, but /me wasn't explicitly shown. 
-    // The prompt says GET /api/auth/me but the routes file had /api/logout. We'll use /me for now.
-    return response.data;
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return { id: 1, name: 'Aaron', email: 'aaron@stark.com', role: 'ADMIN' as const };
   }
 };

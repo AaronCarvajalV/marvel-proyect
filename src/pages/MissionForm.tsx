@@ -1,242 +1,253 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { missionService } from '../services/missionService';
-import type { CreateMissionData } from '../services/missionService';
-import { heroService } from '../services/heroService';
-import type { Hero } from '../services/heroService';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
-import { LoadingState } from '../components/ui/LoadingState';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const MissionForm: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const isEditing = !!id && id !== 'new';
-  
-  const [formData, setFormData] = useState<CreateMissionData>({
-    titulo: '',
-    descripcion: '',
-    ubicacion: '',
-    fecha: new Date().toISOString().split('T')[0],
-    nivel_peligro: 'MEDIO',
-    estado: 'PENDIENTE',
-    superheroe_id: null
-  });
-  
-  const [heroes, setHeroes] = useState<Hero[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [threatLevel, setThreatLevel] = useState('omega');
 
-  useEffect(() => {
-    if (user?.role !== 'ADMIN') {
-      navigate('/missions');
-    }
-  }, [user, navigate]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const heroesData = await heroService.getAll();
-        setHeroes(heroesData);
-
-        if (isEditing) {
-          const data = await missionService.getById(Number(id));
-          setFormData({
-            titulo: data.titulo,
-            descripcion: data.descripcion || '',
-            ubicacion: data.ubicacion,
-            fecha: data.fecha.split(' ')[0], // Simple date parsing
-            nivel_peligro: data.nivel_peligro,
-            estado: data.estado,
-            superheroe_id: data.superheroe_id
-          });
-        }
-      } catch (err) {
-        setError('Error al cargar datos.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id, isEditing]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: name === 'superheroe_id' ? (value ? Number(value) : null) : value 
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSaving(true);
-    
-    try {
-      if (isEditing) {
-        await missionService.update(Number(id), formData);
-      } else {
-        await missionService.create(formData);
-      }
-      navigate('/missions');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al guardar la misión.');
-      setSaving(false);
-    }
+    navigate('/missions');
   };
-
-  if (loading) return <LoadingState message="Recuperando protocolo de misión..." />;
 
   return (
-    <div className="max-w-[800px] mx-auto w-full space-y-gutter pb-8">
-      <div className="flex items-center justify-between">
-        <button 
-          onClick={() => navigate('/missions')}
-          className="flex items-center gap-2 text-outline hover:text-primary transition-colors bg-transparent border-none"
-        >
-          <span className="material-symbols-outlined text-[16px]">arrow_back</span>
-          <span className="font-label-caps text-label-caps">VOLVER</span>
-        </button>
-      </div>
+    <div className="flex-1 flex flex-col w-full max-w-container-max mx-auto relative z-10 pb-12">
+      <style>
+        {`
+          @keyframes scan {
+              0% { top: 0; opacity: 0; }
+              10% { opacity: 1; }
+              90% { opacity: 1; }
+              100% { top: 100%; opacity: 0; }
+          }
+          
+          /* Form Inputs Focus Ring Reset */
+          input:focus, textarea:focus, select:focus {
+              outline: none;
+              box-shadow: none;
+          }
+        `}
+      </style>
 
-      <div className="bg-surface-charcoal/80 backdrop-blur-xl border border-glass-border rounded-lg p-6 md:p-8">
-        <div className="mb-8 border-b border-glass-border/50 pb-4">
-          <h2 className="font-headline-lg-mobile md:font-headline-lg text-on-surface tracking-tight m-0 mb-1">
-            {isEditing ? 'ACTUALIZAR MISIÓN' : 'NUEVO REGISTRO DE MISIÓN'}
-          </h2>
-          <span className="font-metadata text-metadata text-secondary-container">Acreditación Nivel 8 Requerida</span>
+      {/* Page Header */}
+      <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-grid-line pb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span className="font-metadata text-metadata text-primary uppercase tracking-widest">ARCHIVE / OPERATION PARAMETERS</span>
+          </div>
+          <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">EDIT MISSION</h1>
+        </div>
+        
+        <div className="flex gap-3 mt-4 md:mt-0">
+          <button 
+            type="button"
+            onClick={() => navigate('/missions')}
+            className="px-4 py-2 border border-outline-variant text-on-surface-variant font-label-caps text-label-caps rounded-sm hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer"
+          >
+            DISCARD_CHANGES
+          </button>
+          <button 
+            onClick={handleSubmit}
+            className="px-4 py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-sm hover:shadow-[0_0_12px_rgba(0,210,255,0.4)] transition-all duration-300 cursor-pointer"
+          >
+            UPDATE_PROTOCOL
+          </button>
+        </div>
+      </header>
+
+      {/* Edit Form Grid */}
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+        
+        {/* Left Column: Primary Data */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          
+          {/* Identification Card */}
+          <section className="bg-surface-charcoal border border-outline-variant rounded-sm overflow-hidden">
+            <div className="bg-surface-container border-b border-outline-variant px-4 py-2 flex items-center justify-between">
+              <h2 className="font-data-mono text-data-mono text-on-surface">MISSION_IDENTIFICATION</h2>
+              <span className="material-symbols-outlined text-outline-variant text-[16px]">fingerprint</span>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="space-y-2 group">
+                <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">OPERATION TITLE</label>
+                <input 
+                  className="w-full bg-surface border border-outline-variant text-on-surface font-body-lg px-4 py-3 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-data-mono" 
+                  type="text" 
+                  defaultValue="OPERATION NIGHTFALL"
+                />
+              </div>
+              
+              <div className="space-y-2 group">
+                <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">TACTICAL OVERVIEW</label>
+                <textarea 
+                  className="w-full bg-surface border border-outline-variant text-on-surface-variant font-body-sm px-4 py-3 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all resize-none" 
+                  rows={4}
+                  defaultValue="Infiltration and data extraction from facility sector 7G. Avoid detection. Secondary objective: sabotage communication relays."
+                ></textarea>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2 group">
+                  <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">PRIMARY OPERATIVE</label>
+                  <select 
+                    className="w-full bg-surface border border-outline-variant text-on-surface font-data-mono px-4 py-3 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all appearance-none cursor-pointer"
+                    defaultValue="op-02"
+                  >
+                    <option value="op-01">OPERATOR_01 (GHOST)</option>
+                    <option value="op-02">OPERATOR_04 (PHANTOM)</option>
+                    <option value="op-03">OPERATOR_07 (SPECTER)</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-2 group">
+                  <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">EST. DURATION (HRS)</label>
+                  <input 
+                    className="w-full bg-surface border border-outline-variant text-on-surface font-data-mono px-4 py-3 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all" 
+                    type="number" 
+                    defaultValue="48"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Threat Level Card */}
+          <section className="bg-surface-charcoal border border-outline-variant rounded-sm overflow-hidden">
+            <div className="bg-surface-container border-b border-outline-variant px-4 py-2 flex items-center justify-between">
+              <h2 className="font-data-mono text-data-mono text-on-surface">THREAT_ASSESSMENT</h2>
+              <span className="material-symbols-outlined text-outline-variant text-[16px]">warning</span>
+            </div>
+            
+            <div className="p-6">
+              <div className="space-y-4">
+                <label className="font-metadata text-metadata text-outline uppercase block">CURRENT THREAT LEVEL</label>
+                
+                {/* Custom Radio Group for Threat Level */}
+                <div className="grid grid-cols-3 gap-3">
+                  
+                  {/* Level 1: Low (Cyan) */}
+                  <label className="relative cursor-pointer">
+                    <input 
+                      className="peer sr-only" 
+                      name="threat_level" 
+                      type="radio" 
+                      value="low"
+                      checked={threatLevel === 'low'}
+                      onChange={() => setThreatLevel('low')}
+                    />
+                    <div className="w-full py-3 border border-outline-variant text-center rounded-sm peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary text-on-surface-variant font-data-mono text-data-mono transition-all">
+                      ALPHA (LOW)
+                    </div>
+                  </label>
+                  
+                  {/* Level 2: Medium (Amber) */}
+                  <label className="relative cursor-pointer">
+                    <input 
+                      className="peer sr-only" 
+                      name="threat_level" 
+                      type="radio" 
+                      value="medium"
+                      checked={threatLevel === 'medium'}
+                      onChange={() => setThreatLevel('medium')}
+                    />
+                    <div className="w-full py-3 border border-outline-variant text-center rounded-sm peer-checked:bg-secondary-container/10 peer-checked:border-secondary-container peer-checked:text-secondary-container text-on-surface-variant font-data-mono text-data-mono transition-all">
+                      BETA (MED)
+                    </div>
+                  </label>
+                  
+                  {/* Level 3: High/Omega (Red/Error) */}
+                  <label className="relative cursor-pointer">
+                    <input 
+                      className="peer sr-only" 
+                      name="threat_level" 
+                      type="radio" 
+                      value="omega"
+                      checked={threatLevel === 'omega'}
+                      onChange={() => setThreatLevel('omega')}
+                    />
+                    <div className="w-full py-3 border border-outline-variant text-center rounded-sm peer-checked:bg-error/10 peer-checked:border-error peer-checked:text-error peer-checked:shadow-[0_0_8px_rgba(255,180,171,0.4)] text-on-surface-variant font-data-mono text-data-mono transition-all relative overflow-hidden">
+                      {/* Amber alert glow effect */}
+                      <div className={`absolute inset-0 bg-error/5 animate-pulse ${threatLevel === 'omega' ? 'block' : 'hidden'}`}></div>
+                      OMEGA (CRIT)
+                    </div>
+                  </label>
+                  
+                </div>
+              </div>
+            </div>
+          </section>
+          
         </div>
 
-        {error && (
-          <div className="bg-[#ef4444]/10 border border-[#ef4444]/30 p-4 rounded-DEFAULT text-[#ef4444] mb-6 flex items-center gap-3">
-            <span className="material-symbols-outlined text-[20px]">error</span>
-            <span className="font-data-mono">{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input 
-              label="TÍTULO DE LA MISIÓN" 
-              name="titulo" 
-              value={formData.titulo} 
-              onChange={handleChange} 
-              required 
-              placeholder="Ej. Operación Sokovia"
-            />
-            <Input 
-              label="UBICACIÓN" 
-              name="ubicacion" 
-              value={formData.ubicacion} 
-              onChange={handleChange} 
-              required
-              placeholder="Ej. New York City"
-            />
-          </div>
-
-          <div className="space-y-1 group">
-            <label className="font-label-caps text-label-caps tracking-widest block text-primary">DESCRIPCIÓN DE LA MISIÓN</label>
-            <div className="relative">
-              <textarea
-                name="descripcion"
-                value={formData.descripcion || ''}
-                onChange={handleChange}
-                rows={4}
-                className="w-full bg-surface-charcoal/50 border border-glass-border rounded-[4px] py-3 px-4 font-data-mono text-data-mono text-on-surface focus:outline-none focus:border-primary/50 focus:bg-surface-charcoal/80 transition-all placeholder:text-on-surface-variant/30 resize-y"
-                placeholder="Detalles operativos..."
-              />
-              <div className="absolute inset-0 border border-primary/20 rounded-[4px] pointer-events-none opacity-0 group-focus-within:opacity-100 group-focus-within:animate-pulse-slow"></div>
+        {/* Right Column: Coordinates & Map */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          <section className="bg-surface-charcoal border border-outline-variant rounded-sm overflow-hidden flex-1 flex flex-col">
+            <div className="bg-surface-container border-b border-outline-variant px-4 py-2 flex items-center justify-between">
+              <h2 className="font-data-mono text-data-mono text-on-surface">LOCATIONAL_DATA</h2>
+              <span className="material-symbols-outlined text-outline-variant text-[16px]">radar</span>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input 
-              label="FECHA" 
-              name="fecha" 
-              type="date"
-              value={formData.fecha} 
-              onChange={handleChange} 
-              required 
-            />
             
-            <div className="space-y-1 group">
-              <label className="font-label-caps text-label-caps tracking-widest block text-primary">NIVEL DE PELIGRO</label>
-              <div className="relative">
-                <select
-                  name="nivel_peligro"
-                  value={formData.nivel_peligro}
-                  onChange={handleChange}
-                  className="w-full bg-surface-charcoal/50 border border-glass-border rounded-[4px] py-3 px-4 font-data-mono text-data-mono text-on-surface focus:outline-none focus:border-primary/50 focus:bg-surface-charcoal/80 transition-all appearance-none"
-                >
-                  <option value="BAJO">BAJO</option>
-                  <option value="MEDIO">MEDIO</option>
-                  <option value="ALTO">ALTO</option>
-                  <option value="EXTREMO">EXTREMO (Nivel Avengers)</option>
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
-                  <span className="material-symbols-outlined text-[20px]">expand_more</span>
+            <div className="p-6 flex-1 flex flex-col space-y-6">
+              
+              {/* Coordinates Input */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2 group">
+                  <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">LATITUDE</label>
+                  <div className="relative">
+                    <input 
+                      className="w-full bg-surface border border-outline-variant text-on-surface font-data-mono px-4 py-2 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all pl-8" 
+                      type="text" 
+                      defaultValue="34.0522 N"
+                    />
+                    <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline-variant text-[16px]">location_on</span>
+                  </div>
                 </div>
-                <div className="absolute inset-0 border border-primary/20 rounded-[4px] pointer-events-none opacity-0 group-focus-within:opacity-100 group-focus-within:animate-pulse-slow"></div>
+                <div className="space-y-2 group">
+                  <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">LONGITUDE</label>
+                  <div className="relative">
+                    <input 
+                      className="w-full bg-surface border border-outline-variant text-on-surface font-data-mono px-4 py-2 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all pl-8" 
+                      type="text" 
+                      defaultValue="118.2437 W"
+                    />
+                    <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline-variant text-[16px]">location_on</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Technical Map Visual */}
+              <div className="relative flex-1 min-h-[300px] border border-glass-border rounded-sm overflow-hidden bg-surface-dim mt-4 group">
+                {/* Overlay UI on Map */}
+                <div className="absolute top-2 left-2 z-10 flex gap-2">
+                  <span className="bg-surface/80 backdrop-blur-sm border border-outline-variant px-2 py-1 font-metadata text-metadata text-primary">SAT_LINK_ACTIVE</span>
+                </div>
+                
+                {/* Map Image Placeholder */}
+                <div 
+                  className="w-full h-full bg-cover bg-center opacity-60 group-hover:opacity-80 transition-opacity duration-500" 
+                  style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA10mvGkO2th3U78RYp61hzGyP3omwjJnBNiI2i466tCV0lCXahYV4YtfrYuv9UKJ6o3PcvYZe59YvIKnStosQnBHgxF04w_xh573MTiXyX7bxKeHQuh8xI-cKc2v0vboA8Smn5Asz37mChP822FppU26yAJMormABj3DZ9VEr9ZzLe7AQofkA-OgMXbQiE-0og3wogNwADknh-vcdnHzFFjlPrasHSosZ3eQ2g5bmrS-35bxSmsnBi')"}}
+                >
+                </div>
+                
+                {/* Map Reticle/Target */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                  <div className="w-16 h-16 border border-error/50 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite]">
+                    <div className="w-full h-[1px] bg-error/30 absolute"></div>
+                    <div className="w-[1px] h-full bg-error/30 absolute"></div>
+                  </div>
+                  <div className="w-2 h-2 bg-error rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-ping"></div>
+                  <div className="w-2 h-2 bg-error rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+                </div>
+                
+                {/* Scanner Line */}
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/40 shadow-[0_0_8px_rgba(0,210,255,0.8)] animate-[scan_3s_ease-in-out_infinite]"></div>
               </div>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-1 group">
-              <label className="font-label-caps text-label-caps tracking-widest block text-primary">OPERATIVO ASIGNADO</label>
-              <div className="relative">
-                <select
-                  name="superheroe_id"
-                  value={formData.superheroe_id || ''}
-                  onChange={handleChange}
-                  className="w-full bg-surface-charcoal/50 border border-glass-border rounded-[4px] py-3 px-4 font-data-mono text-data-mono text-on-surface focus:outline-none focus:border-primary/50 focus:bg-surface-charcoal/80 transition-all appearance-none"
-                >
-                  <option value="">SIN ASIGNAR</option>
-                  {heroes.map(h => (
-                    <option key={h.id} value={h.id}>{h.nombre}</option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
-                  <span className="material-symbols-outlined text-[20px]">expand_more</span>
-                </div>
-                <div className="absolute inset-0 border border-primary/20 rounded-[4px] pointer-events-none opacity-0 group-focus-within:opacity-100 group-focus-within:animate-pulse-slow"></div>
-              </div>
-            </div>
-
-            <div className="space-y-1 group">
-              <label className="font-label-caps text-label-caps tracking-widest block text-primary">ESTADO ACTUAL</label>
-              <div className="relative">
-                <select
-                  name="estado"
-                  value={formData.estado}
-                  onChange={handleChange}
-                  className="w-full bg-surface-charcoal/50 border border-glass-border rounded-[4px] py-3 px-4 font-data-mono text-data-mono text-on-surface focus:outline-none focus:border-primary/50 focus:bg-surface-charcoal/80 transition-all appearance-none"
-                >
-                  <option value="PENDIENTE">PENDIENTE</option>
-                  <option value="EN_PROGRESO">EN PROGRESO</option>
-                  <option value="COMPLETADA">COMPLETADA</option>
-                  <option value="CANCELADA">CANCELADA</option>
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-outline">
-                  <span className="material-symbols-outlined text-[20px]">expand_more</span>
-                </div>
-                <div className="absolute inset-0 border border-primary/20 rounded-[4px] pointer-events-none opacity-0 group-focus-within:opacity-100 group-focus-within:animate-pulse-slow"></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex justify-end gap-4">
-            <Button type="button" variant="ghost" onClick={() => navigate('/missions')}>CANCELAR</Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? 'PROCESANDO...' : 'GUARDAR PROTOCOLO'}
-            </Button>
-          </div>
-        </form>
-      </div>
+          </section>
+        </div>
+      </form>
     </div>
   );
 };

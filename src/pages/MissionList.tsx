@@ -1,133 +1,222 @@
-import React, { useEffect, useState } from 'react';
-import { missionService } from '../services/missionService';
-import type { Mission } from '../services/missionService';
-import { LoadingState } from '../components/ui/LoadingState';
-import { EmptyState } from '../components/ui/EmptyState';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { ConfirmModal } from '../components/common/ConfirmModal';
 
 export const MissionList: React.FC = () => {
-  const [missions, setMissions] = useState<Mission[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const [timeString, setTimeString] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMission, setSelectedMission] = useState<string | undefined>();
 
   useEffect(() => {
-    const fetchMissions = async () => {
-      try {
-        const data = await missionService.getAll();
-        setMissions(data);
-      } catch (error) {
-        console.error("Error fetching missions", error);
-      } finally {
-        setLoading(false);
-      }
+    const updateClock = () => {
+      const now = new Date();
+      setTimeString(now.toISOString().split('T')[1].slice(0, 8) + ' UTC');
     };
-    fetchMissions();
+    const intervalId = setInterval(updateClock, 1000);
+    updateClock();
+    return () => clearInterval(intervalId);
   }, []);
 
-  const filteredMissions = missions.filter(m => 
-    m.titulo.toLowerCase().includes(search.toLowerCase()) || 
-    m.ubicacion.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
-    <div className="max-w-container-max mx-auto space-y-gutter">
+    <div className="flex-1 w-full h-full relative z-10">
+      <style>
+        {`
+          .glass-panel {
+              background: rgba(18, 19, 22, 0.8);
+              backdrop-filter: blur(16px);
+              -webkit-backdrop-filter: blur(16px);
+              border: 1px solid rgba(0, 210, 255, 0.2);
+          }
+          .glass-panel-amber {
+              background: rgba(18, 19, 22, 0.8);
+              backdrop-filter: blur(16px);
+              -webkit-backdrop-filter: blur(16px);
+              border: 1px solid rgba(254, 170, 0, 0.4);
+              box-shadow: 0 0 15px rgba(254, 170, 0, 0.1);
+          }
+          .glow-cyan { text-shadow: 0 0 8px rgba(0, 210, 255, 0.6); }
+          .glow-amber { text-shadow: 0 0 8px rgba(254, 170, 0, 0.6); }
+          .scan-line {
+              width: 100%;
+              height: 2px;
+              background: linear-gradient(90deg, transparent, rgba(0, 210, 255, 0.5), transparent);
+              animation: scan 3s linear infinite;
+          }
+          @keyframes scan {
+              0% { transform: translateY(-10px); opacity: 0; }
+              50% { opacity: 1; }
+              100% { transform: translateY(20px); opacity: 0; }
+          }
+        `}
+      </style>
+
       {/* Header Section */}
-      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="material-symbols-outlined text-primary text-sm">public</span>
-            <h3 className="font-label-caps text-label-caps text-primary tracking-widest">OPERATIONS_LOG</h3>
-          </div>
-          <h1 className="font-headline-lg-mobile md:font-headline-lg text-on-surface tracking-tight">
-            Active Missions
+          <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface tracking-tight uppercase flex items-center gap-3">
+            <span className="material-symbols-outlined text-primary text-[32px] md:text-[40px] glow-cyan">target</span>
+            ACTIVE OPERATIONS
           </h1>
-          <p className="font-data-mono text-data-mono text-on-surface-variant mt-2">
-            Registro global de operaciones y amenazas.
+          <p className="font-data-mono text-data-mono text-outline mt-1 uppercase flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            LIVE TACTICAL OVERVIEW // <span className="text-surface-tint">{timeString}</span>
           </p>
         </div>
-        {user?.role === 'ADMIN' && (
-          <Link 
-            to="/missions/new" 
-            className="inline-flex items-center gap-2 bg-primary/10 hover:bg-primary/20 border border-primary text-primary px-4 py-2 rounded-DEFAULT font-label-caps text-label-caps transition-colors"
-          >
-            <span className="material-symbols-outlined text-[16px]">add</span>
-            NUEVA MISIÓN
-          </Link>
-        )}
-      </section>
 
-      {/* Search Section */}
-      <section className="bg-surface-charcoal/60 backdrop-blur-md border border-glass-border rounded-lg p-2 flex items-center gap-2 focus-within:border-primary/50 transition-colors">
-        <span className="material-symbols-outlined text-outline ml-2">search</span>
-        <input 
-          type="text" 
-          placeholder="Buscar misiones por título o ubicación..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="bg-transparent border-none outline-none text-on-surface font-data-mono text-data-mono flex-1 px-2 py-2 placeholder:text-outline"
-        />
-      </section>
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-2 font-label-caps text-label-caps uppercase bg-surface-charcoal p-1 border border-outline-variant rounded">
+          <button className="px-4 py-1.5 bg-primary/20 text-primary border border-primary/50 shadow-[0_0_8px_rgba(0,210,255,0.2)] transition-all">ACTIVE</button>
+          <button className="px-4 py-1.5 text-outline hover:text-primary transition-colors border border-transparent hover:border-outline-variant">STANDBY</button>
+          <button className="px-4 py-1.5 text-outline hover:text-primary transition-colors border border-transparent hover:border-outline-variant">ARCHIVED</button>
+          <div className="w-px h-4 bg-outline-variant mx-1"></div>
+          <button className="px-4 py-1.5 text-secondary-container flex items-center gap-1 hover:bg-secondary-container/10 transition-colors border border-transparent hover:border-secondary-container/30">
+            <span className="material-symbols-outlined text-[14px]">warning</span>
+            THREAT_LEVEL
+          </button>
+        </div>
+      </header>
 
-      {/* Grid Section */}
-      <section className="pb-8">
-        {loading ? (
-          <LoadingState message="Interceptando comunicaciones..." />
-        ) : filteredMissions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-            {filteredMissions.map(mission => (
-              <div 
-                key={mission.id} 
-                onClick={() => user?.role === 'ADMIN' ? navigate(`/missions/${mission.id}/edit`) : null}
-                className={`bg-surface-charcoal/60 backdrop-blur-md border border-glass-border rounded-lg p-6 group relative overflow-hidden transition-colors block ${user?.role === 'ADMIN' ? 'hover:border-primary/50 cursor-pointer' : 'cursor-default'}`}
-              >
-                <div className={`absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 transition-opacity ${user?.role === 'ADMIN' ? 'group-hover:opacity-100' : ''}`}></div>
-                
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary">target</span>
-                    <h3 className="font-data-mono text-lg font-bold text-on-surface m-0 leading-tight">{mission.titulo}</h3>
-                  </div>
-                  <span className={`font-label-caps text-[10px] px-2 py-0.5 rounded-DEFAULT border shrink-0 ${mission.estado === 'COMPLETADA' ? 'border-[#4ade80] text-[#4ade80] bg-[#4ade80]/10' : mission.estado === 'ACTIVA' ? 'border-primary text-primary bg-primary/10' : 'border-outline text-outline bg-surface-dim'}`}>
-                    {mission.estado}
-                  </span>
-                </div>
-                
-                <p className="font-metadata text-metadata text-outline mb-6 line-clamp-2">
-                  {mission.descripcion || 'Sin descripción detallada.'}
-                </p>
-
-                <div className="grid grid-cols-2 gap-3 bg-black/20 p-3 rounded-DEFAULT">
-                  <div className="flex items-center gap-2 text-secondary-container">
-                    <span className="material-symbols-outlined text-[14px]">location_on</span>
-                    <span className="font-metadata text-[11px] truncate">{mission.ubicacion}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-outline">
-                    <span className="material-symbols-outlined text-[14px]">schedule</span>
-                    <span className="font-metadata text-[11px]">{new Date(mission.fecha).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`material-symbols-outlined text-[14px] ${mission.nivel_peligro === 'EXTREMO' ? 'text-[#ef4444]' : 'text-outline'}`}>warning</span>
-                    <span className={`font-metadata text-[11px] ${mission.nivel_peligro === 'EXTREMO' ? 'text-[#ef4444]' : 'text-outline'}`}>{mission.nivel_peligro}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-label-caps text-[10px] text-outline">OP:</span>
-                    <span className="font-metadata text-[11px] text-primary truncate">{mission.hero?.nombre || 'UNASSIGNED'}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+      {/* Grid Layout for Mission Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max pb-12">
+        
+        {/* Mission Card: OMEGA Level (Amber) */}
+        <article className="glass-panel-amber p-5 flex flex-col gap-4 relative overflow-hidden group">
+          <div className="scan-line absolute top-0 left-0"></div>
+          
+          <div className="flex justify-between items-start border-b border-secondary-container/30 pb-3">
+            <div>
+              <span className="font-metadata text-metadata text-secondary-container bg-secondary-container/10 px-2 py-0.5 border border-secondary-container/30 flex items-center gap-1 w-fit mb-1">
+                <span className="material-symbols-outlined text-[10px]">priority_high</span> OMEGA_THREAT
+              </span>
+              <h2 className="font-data-mono text-[16px] font-bold text-on-surface uppercase tracking-wide">OP: BLACK_ECHO</h2>
+              <p className="font-data-mono text-[11px] text-outline">ID: 994-OMEGA-X</p>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="w-2 h-2 rounded-full bg-secondary-container animate-pulse shadow-[0_0_6px_rgba(254,170,0,0.8)]"></div>
+              <span className="font-metadata text-metadata text-secondary-container mt-1">CRITICAL</span>
+            </div>
           </div>
-        ) : (
-          <EmptyState 
-            icon={<span className="material-symbols-outlined text-4xl opacity-50">description</span>}
-            title="SIN RESULTADOS"
-            description={search ? "No se encontraron misiones que coincidan con la búsqueda." : "No hay misiones activas en el sistema."}
-          />
-        )}
-      </section>
+          
+          <div className="flex-1">
+            <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed line-clamp-3">
+              Anomalous energy spikes detected in Sector 7 sub-levels. Unknown hostile entity compromising structural integrity. Immediate neutralization required to prevent cascade failure.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 font-data-mono text-[12px] bg-background/50 p-3 border border-technical-gray">
+            <div className="flex flex-col">
+              <span className="text-outline text-[10px]">TARGET LOC:</span>
+              <span className="text-on-surface flex items-center gap-1 mt-0.5">
+                <span className="material-symbols-outlined text-[14px] text-secondary-container">location_on</span>
+                SECTOR_7_DEEP
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-outline text-[10px]">T-MINUS:</span>
+              <span className="text-on-surface flex items-center gap-1 mt-0.5 font-bold text-secondary-container glow-amber">
+                <span className="material-symbols-outlined text-[14px]">timer</span>
+                00:14:59
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between mt-auto pt-3 border-t border-secondary-container/20">
+            <div className="flex items-center gap-2">
+              <img alt="HERO_ASSIGNED" className="w-8 h-8 rounded border border-secondary-container/50 object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuVwgDJTEHZKwwPbcuPqZvKybhFNWCVhou1_Qvko5D2TgV0fNWWeYWuHxmkw9eWTVWeBzGd1smD0IvQHLK7EzKdV94lUccf3uFeNyZ6y1RJX2kh2sVfwop8K0tLMqfqEf0JQPN38o1WDh9S9XaoeXBS2pnbJvtLYskK7DIExteixUD_5fQUPgfiGh-8OvBueTWPR1YSlTRqrugNOuiq9TzZCbMXAY5pD0LQ3nHAtskGNwbiEU_zz59"/>
+              <div className="flex flex-col">
+                <span className="font-metadata text-metadata text-outline">ASSIGNED_TO:</span>
+                <span className="font-data-mono text-[12px] text-on-surface">UNIT_VANGUARD</span>
+              </div>
+            </div>
+            <button className="bg-secondary-container/10 border border-secondary-container text-secondary-container hover:bg-secondary-container hover:text-black font-label-caps text-label-caps px-3 py-1.5 transition-all flex items-center gap-1 cursor-pointer">
+              VIEW_INTEL
+              <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+            </button>
+          </div>
+        </article>
+
+        {/* Mission Card: Standard Level (Cyan) */}
+        <article className="glass-panel p-5 flex flex-col gap-4 relative overflow-hidden group hover:border-primary/50 transition-colors">
+          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+          
+          <div className="flex justify-between items-start border-b border-glass-border pb-3">
+            <div>
+              <span className="font-metadata text-metadata text-primary bg-primary/10 px-2 py-0.5 border border-primary/30 flex items-center gap-1 w-fit mb-1">
+                <span className="material-symbols-outlined text-[10px]">check_circle</span> ACTIVE_STANDARD
+              </span>
+              <h2 className="font-data-mono text-[16px] font-bold text-on-surface uppercase tracking-wide">OP: SILENT_DAWN</h2>
+              <p className="font-data-mono text-[11px] text-outline">ID: 412-ALPHA-S</p>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_6px_rgba(0,210,255,0.8)]"></div>
+              <span className="font-metadata text-metadata text-primary mt-1">PROCESSING</span>
+              <button 
+                onClick={() => {
+                  setSelectedMission('OP: SILENT_DAWN');
+                  setIsModalOpen(true);
+                }}
+                className="mt-2 text-error text-[10px] uppercase font-label-caps hover:underline cursor-pointer"
+              >
+                TERMINATE
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex-1">
+            <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed line-clamp-3">
+              Routine perimeter sweep and network diagnostics of the outer array. Signal interference detected, likely atmospheric, but requires physical verification of relay nodes.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3 font-data-mono text-[12px] bg-background/50 p-3 border border-technical-gray">
+            <div className="flex flex-col">
+              <span className="text-outline text-[10px]">TARGET LOC:</span>
+              <span className="text-on-surface flex items-center gap-1 mt-0.5">
+                <span className="material-symbols-outlined text-[14px] text-primary">location_on</span>
+                OUTER_ARRAY_N
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-outline text-[10px]">EST_COMPLETION:</span>
+              <span className="text-on-surface flex items-center gap-1 mt-0.5">
+                <span className="material-symbols-outlined text-[14px] text-outline">schedule</span>
+                04H_30M
+              </span>
+            </div>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="w-full h-[2px] bg-technical-gray border border-outline-variant/30 mt-1 mb-1">
+            <div className="h-full bg-primary w-[65%] shadow-[0_0_8px_rgba(0,210,255,0.5)] relative">
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white shadow-[0_0_4px_#fff]"></div>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between mt-auto pt-3 border-t border-glass-border">
+            <div className="flex items-center gap-2">
+              <img alt="HERO_ASSIGNED" className="w-8 h-8 rounded border border-primary/30 object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJUxtDJAsXAwyhoijqOEKOWdLg6Godk3Sbp_m6dkC7TZYCPx34aRiwWq50CwROV0Fm-DREmL5a3rioKCGXntcUYc3xyTbCD4I1PMrZPH4R0knWNTYPpUGPGKLOwmq6kfpbLo0Mdqk21IPE0h08xWOMBflmTnFDNS9M5Oj7arCl-9ObsY7LxxSF1Ij5xkTarGgKOCDLSKCMGuY7gET5hQ5IzFwL2vdXUq9ny13MmCIUhWSmW372cRRZ"/>
+              <div className="flex flex-col">
+                <span className="font-metadata text-metadata text-outline">ASSIGNED_TO:</span>
+                <span className="font-data-mono text-[12px] text-on-surface">SCOUT_PHANTOM</span>
+              </div>
+            </div>
+            <button className="bg-transparent border border-primary text-primary hover:bg-primary hover:text-on-primary font-label-caps text-label-caps px-3 py-1.5 transition-all flex items-center gap-1 cursor-pointer">
+              MONITOR
+              <span className="material-symbols-outlined text-[14px]">visibility</span>
+            </button>
+          </div>
+        </article>
+
+      </div>
+
+      <ConfirmModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={() => {
+          setIsModalOpen(false);
+          // additional logic...
+        }}
+        itemName={selectedMission}
+      />
     </div>
   );
 };
