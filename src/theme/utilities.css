@@ -1,0 +1,63 @@
+/* --- Animations --- */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.opacity-50 {
+  opacity: 0.5;
+}
+
+/* --- Layout Utilities --- */
+.flex { display: flex; }
+.flex-col { display: flex; flexDirection: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: var(--spacing-sm); }
+.gap-4 { gap: var(--spacing-md); }
+.gap-6 { gap: var(--spacing-lg); }
+
+/* --- Spacing Utilities --- */
+.mt-4 { margin-top: var(--spacing-md); }
+.mt-6 { margin-top: var(--spacing-lg); }
+.mb-4 { margin-bottom: var(--spacing-md); }
+.mb-6 { margin-bottom: var(--spacing-lg); }
+.mb-2 { margin-bottom: var(--spacing-sm); }
+
+/* --- Status Colors --- */
+.status-activo, .status-completada {
+  color: #10b981;
+}
+
+.status-inactivo, .status-cancelada {
+  color: #6b7280;
+}
+
+.status-mia, .status-pendiente {
+  color: #f59e0b;
+}
+
+.status-en_progreso {
+  color: #3b82f6;
+}
+
+/* --- Interactive Effects --- */
+.hover-glow:hover {
+  border-color: rgba(226, 54, 54, 0.5) !important;
+  box-shadow: 0 0 15px rgba(226, 54, 54, 0.1);
+  transform: translateY(-2px);
+}
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
