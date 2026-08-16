@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ConfirmModal } from '../components/common/ConfirmModal';
 
 export const MissionList: React.FC = () => {
@@ -62,6 +63,16 @@ export const MissionList: React.FC = () => {
           </p>
         </div>
 
+        <div className="flex gap-4">
+          {/* Action Buttons */}
+          <Link 
+            to="/missions/new"
+            className="hidden md:flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-label-caps text-label-caps uppercase rounded hover:shadow-lg transition-all glow-border"
+          >
+            <span className="material-symbols-outlined text-sm">add</span>
+            REGISTER OP
+          </Link>
+
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 font-label-caps text-label-caps uppercase bg-surface-charcoal p-1 border border-outline-variant rounded">
           <button className="px-4 py-1.5 bg-primary/20 text-primary border border-primary/50 shadow-[0_0_8px_rgba(0,210,255,0.2)] transition-all">ACTIVE</button>
@@ -72,6 +83,7 @@ export const MissionList: React.FC = () => {
             <span className="material-symbols-outlined text-[14px]">warning</span>
             THREAT_LEVEL
           </button>
+        </div>
         </div>
       </header>
 
@@ -127,10 +139,15 @@ export const MissionList: React.FC = () => {
                 <span className="font-data-mono text-[12px] text-on-surface">UNIT_VANGUARD</span>
               </div>
             </div>
-            <button className="bg-secondary-container/10 border border-secondary-container text-secondary-container hover:bg-secondary-container hover:text-black font-label-caps text-label-caps px-3 py-1.5 transition-all flex items-center gap-1 cursor-pointer">
-              VIEW_INTEL
-              <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-            </button>
+            <div className="flex gap-2">
+              <Link to="/missions/994-OMEGA-X/edit" className="bg-transparent border border-outline-variant text-outline hover:text-primary hover:border-primary font-label-caps text-label-caps px-3 py-1.5 transition-all flex items-center gap-1 cursor-pointer">
+                EDIT
+              </Link>
+              <button className="bg-secondary-container/10 border border-secondary-container text-secondary-container hover:bg-secondary-container hover:text-black font-label-caps text-label-caps px-3 py-1.5 transition-all flex items-center gap-1 cursor-pointer">
+                VIEW_INTEL
+                <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </button>
+            </div>
           </div>
         </article>
 
@@ -199,10 +216,15 @@ export const MissionList: React.FC = () => {
                 <span className="font-data-mono text-[12px] text-on-surface">SCOUT_PHANTOM</span>
               </div>
             </div>
-            <button className="bg-transparent border border-primary text-primary hover:bg-primary hover:text-on-primary font-label-caps text-label-caps px-3 py-1.5 transition-all flex items-center gap-1 cursor-pointer">
-              MONITOR
-              <span className="material-symbols-outlined text-[14px]">visibility</span>
-            </button>
+            <div className="flex gap-2">
+              <Link to="/missions/412-ALPHA-S/edit" className="bg-transparent border border-outline-variant text-outline hover:text-primary hover:border-primary font-label-caps text-label-caps px-3 py-1.5 transition-all flex items-center gap-1 cursor-pointer">
+                EDIT
+              </Link>
+              <button className="bg-transparent border border-primary text-primary hover:bg-primary hover:text-on-primary font-label-caps text-label-caps px-3 py-1.5 transition-all flex items-center gap-1 cursor-pointer">
+                MONITOR
+                <span className="material-symbols-outlined text-[14px]">visibility</span>
+              </button>
+            </div>
           </div>
         </article>
 

@@ -33,8 +33,8 @@ export const SideNavBar: React.FC = () => {
               : "flex items-center gap-4 text-outline py-3 px-6 hover:text-on-surface-variant hover:bg-technical-gray/50 hover:text-primary-container transition-all group-hover:translate-x-1 duration-300"
           }
         >
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>settings_heart</span>
-          <span className="font-data-mono text-data-mono">OPERATIONS</span>
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
+          <span className="font-data-mono text-data-mono">DASHBOARD</span>
         </NavLink>
 
         <NavLink 
@@ -50,7 +50,7 @@ export const SideNavBar: React.FC = () => {
         </NavLink>
 
         <NavLink 
-          to="/misiones"
+          to="/missions"
           className={({ isActive }) => 
             isActive 
               ? "flex items-center gap-4 text-primary bg-primary/10 border-l-2 border-primary py-3 px-6 shadow-[inset_4px_0_10px_rgba(0,210,255,0.1)] group-hover:translate-x-1 duration-300"
@@ -58,7 +58,7 @@ export const SideNavBar: React.FC = () => {
           }
         >
           <span className="material-symbols-outlined">radar</span>
-          <span className="font-data-mono text-data-mono">STRATEGY</span>
+          <span className="font-data-mono text-data-mono">MISSIONS</span>
         </NavLink>
       </div>
 

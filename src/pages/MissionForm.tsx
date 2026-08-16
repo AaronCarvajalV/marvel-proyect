@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export const MissionForm: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditing = !!id;
   const [threatLevel, setThreatLevel] = useState('omega');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -36,7 +38,9 @@ export const MissionForm: React.FC = () => {
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
             <span className="font-metadata text-metadata text-primary uppercase tracking-widest">ARCHIVE / OPERATION PARAMETERS</span>
           </div>
-          <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">EDIT MISSION</h1>
+          <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">
+            {isEditing ? 'EDIT MISSION' : 'REGISTER MISSION'}
+          </h1>
         </div>
         
         <div className="flex gap-3 mt-4 md:mt-0">
@@ -51,7 +55,7 @@ export const MissionForm: React.FC = () => {
             onClick={handleSubmit}
             className="px-4 py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-sm hover:shadow-[0_0_12px_rgba(0,210,255,0.4)] transition-all duration-300 cursor-pointer"
           >
-            UPDATE_PROTOCOL
+            {isEditing ? 'UPDATE_PROTOCOL' : 'INITIATE_PROTOCOL'}
           </button>
         </div>
       </header>

@@ -25,6 +25,7 @@ export const App = () => {
               <Route path="heroes/new" element={<HeroForm />} />
               <Route path="heroes/:id" element={<HeroDetail />} />
               <Route path="missions" element={<MissionList />} />
+              <Route path="missions/new" element={<MissionForm />} />
               <Route path="missions/:id/edit" element={<MissionForm />} />
             </Route>
           </Route>
