@@ -30,7 +30,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     // Superheroes (CRUD)
-    Route::prefix('heroes')->group(function () {
+    Route::prefix('heroes')->middleware('role')->group(function () {
         Route::get('/', [HeroController::class, 'index']);
         Route::get('/{id}', [HeroController::class, 'show']);
 
@@ -43,7 +43,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     // Missions (CRUD)
-    Route::prefix('misiones')->group(function () {
+    Route::prefix('misiones')->middleware('role')->group(function () {
         Route::get('/', [MissionController::class, 'index']);
         Route::get('/{id}', [MissionController::class, 'show']);
 
@@ -54,7 +54,4 @@ Route::middleware('auth:api')->group(function () {
             Route::delete('/{id}', [MissionController::class, 'destroy']);
         });
     });
-
-    // Target Locations (Read-only for now)
-    Route::get('/target-locations', [\App\Http\Controllers\TargetLocationController::class, 'index']);
 });

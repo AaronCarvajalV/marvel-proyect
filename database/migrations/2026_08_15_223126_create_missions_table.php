@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('titulo');
             $table->text('descripcion');
-            $table->foreignId('target_location_id')->constrained('target_locations')->onDelete('cascade');
+            $table->string('ubicacion');
             $table->date('fecha');
             $table->enum('nivel_peligro', ['BAJO', 'MEDIO', 'ALTO'])->default('MEDIO');
             $table->enum('estado', ['PENDIENTE', 'EN_PROGRESO', 'COMPLETADA'])->default('PENDIENTE');

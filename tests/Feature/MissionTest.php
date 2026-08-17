@@ -57,7 +57,7 @@ class MissionTest extends TestCase
         Mission::create([
             'titulo' => 'Defensa de Nueva York',
             'descripcion' => 'Contención alienígena',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Manhattan, NY',
             'fecha' => '2026-05-12',
             'nivel_peligro' => 'ALTO',
             'estado' => 'COMPLETADA',
@@ -75,7 +75,7 @@ class MissionTest extends TestCase
                         'id',
                         'titulo',
                         'descripcion',
-                        'target_location_id',
+                        'ubicacion',
                         'fecha',
                         'nivel_peligro',
                         'estado',
@@ -91,7 +91,7 @@ class MissionTest extends TestCase
         $mission = Mission::create([
             'titulo' => 'Infiltración en Hydra',
             'descripcion' => 'Extracción de planos',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Sokovia',
             'fecha' => '2026-06-20',
             'nivel_peligro' => 'MEDIO',
             'estado' => 'COMPLETADA',
@@ -132,7 +132,7 @@ class MissionTest extends TestCase
         $payload = [
             'titulo' => 'Rescate en Budapest',
             'descripcion' => 'Extracción sigilosa',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Budapest, Hungría',
             'fecha' => '2026-09-05',
             'nivel_peligro' => 'MEDIO',
             'estado' => 'PENDIENTE',
@@ -164,7 +164,7 @@ class MissionTest extends TestCase
         $payload = [
             'titulo' => 'Misión Fallida',
             'descripcion' => 'Sin héroe válido',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Nowhere',
             'fecha' => '2026-10-01',
             'nivel_peligro' => 'ALTO',
             'estado' => 'PENDIENTE',
@@ -187,7 +187,7 @@ class MissionTest extends TestCase
         $payload = [
             'titulo' => 'Misión Restringida',
             'descripcion' => 'Acceso denegado',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Sokovia',
             'fecha' => '2026-10-01',
             'nivel_peligro' => 'ALTO',
             'estado' => 'PENDIENTE',
@@ -205,7 +205,7 @@ class MissionTest extends TestCase
         $mission = Mission::create([
             'titulo' => 'Anomalía Mística',
             'descripcion' => 'Fisuras en el multiverso',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Sanctum',
             'fecha' => '2026-08-10',
             'nivel_peligro' => 'ALTO',
             'estado' => 'PENDIENTE',
@@ -233,7 +233,7 @@ class MissionTest extends TestCase
         $mission = Mission::create([
             'titulo' => 'Misión a Borrar',
             'descripcion' => 'Temporal',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Test',
             'fecha' => '2026-08-10',
             'nivel_peligro' => 'BAJO',
             'estado' => 'COMPLETADA',
@@ -266,7 +266,7 @@ class MissionTest extends TestCase
         $mission = Mission::create([
             'titulo' => 'Misión Restringida',
             'descripcion' => 'Intento de update por consulta',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Wakanda',
             'fecha' => '2026-08-10',
             'nivel_peligro' => 'ALTO',
             'estado' => 'PENDIENTE',
@@ -286,7 +286,7 @@ class MissionTest extends TestCase
         $mission = Mission::create([
             'titulo' => 'Misión Restringida Delete',
             'descripcion' => 'Intento de delete por consulta',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Wakanda',
             'fecha' => '2026-08-10',
             'nivel_peligro' => 'ALTO',
             'estado' => 'PENDIENTE',
@@ -339,7 +339,7 @@ class MissionTest extends TestCase
             ->assertJsonStructure([
                 'success',
                 'message',
-                'errors' => ['titulo', 'descripcion', 'target_location_id', 'fecha', 'nivel_peligro', 'estado', 'superheroe_id'],
+                'errors' => ['titulo', 'descripcion', 'ubicacion', 'fecha', 'nivel_peligro', 'estado', 'superheroe_id'],
             ]);
     }
 
@@ -348,7 +348,7 @@ class MissionTest extends TestCase
         $mission = Mission::create([
             'titulo' => 'Misión Válida',
             'descripcion' => 'Inicial',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Asgard',
             'fecha' => '2026-08-10',
             'nivel_peligro' => 'MEDIO',
             'estado' => 'PENDIENTE',

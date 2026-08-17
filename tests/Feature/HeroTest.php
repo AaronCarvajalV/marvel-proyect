@@ -109,7 +109,7 @@ class HeroTest extends TestCase
         Mission::create([
             'titulo' => 'Patrullaje en Queens',
             'descripcion' => 'Patrullaje urbano',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Queens, NY',
             'fecha' => '2026-08-14',
             'nivel_peligro' => 'BAJO',
             'estado' => 'EN_PROGRESO',
@@ -464,7 +464,7 @@ class HeroTest extends TestCase
         $mission = Mission::create([
             'titulo' => 'Vigilancia en Vormir',
             'descripcion' => 'Misión de reconocimiento',
-            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
+            'ubicacion' => 'Vormir',
             'fecha' => '2026-08-15',
             'nivel_peligro' => 'ALTO',
             'estado' => 'PENDIENTE',
