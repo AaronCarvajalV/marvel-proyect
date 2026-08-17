@@ -7,11 +7,13 @@ import {
   RefreshControl,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Mission, MissionThreatLevel, MissionStatus } from '../../types';
 import { missionsApi } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { MissionCard } from '../../components/missions/MissionCard';
@@ -19,10 +21,13 @@ import { LoadingOverlay } from '../../components/common/LoadingOverlay';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { EmptyState } from '../../components/common/EmptyState';
 import { HeaderHUD } from '../../components/common/HeaderHUD';
+import { HudButton } from '../../components/common/HudButton';
 import { RootStackNavigationProp } from '../../navigation/types';
 
 export const MissionsScreen: React.FC = () => {
   const navigation = useNavigation<RootStackNavigationProp>();
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'ADMIN';
 
   const [missions, setMissions] = useState<Mission[]>([]);
   const [threatFilter, setThreatFilter] = useState<'ALL' | MissionThreatLevel>('ALL');
@@ -37,7 +42,7 @@ export const MissionsScreen: React.FC = () => {
       const data = await missionsApi.getMissions();
       setMissions(data);
     } catch (err: unknown) {
-      let msg = 'No se pudieron recuperar las misiones tácticas del servidor.';
+      let msg = 'Failed to retrieve tactical missions from the server.';
       if (err && typeof err === 'object' && 'message' in err) {
         msg = String((err as { message: string }).message);
       }
@@ -57,6 +62,28 @@ export const MissionsScreen: React.FC = () => {
     await fetchMissions();
   };
 
+  const handleDelete = (missionId: number, missionTitle: string) => {
+    Alert.alert(
+      'TERMINATE PROTOCOL',
+      `Are you sure you want to delete mission: ${missionTitle}? This action cannot be reversed.`,
+      [
+        { text: 'CANCEL', style: 'cancel' },
+        { 
+          text: 'TERMINATE', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await missionsApi.deleteMission(missionId);
+              fetchMissions();
+            } catch (err: any) {
+              Alert.alert('SYSTEM ERROR', err.message || 'Failed to delete mission');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const filteredMissions = useMemo(() => {
     return missions.filter((mission) => {
       const matchesThreat =
@@ -71,17 +98,31 @@ export const MissionsScreen: React.FC = () => {
     navigation.navigate('HeroDetail', { heroId });
   };
 
+  const threatLabels: Record<'ALL' | MissionThreatLevel, string> = {
+    'ALL': 'ALL',
+    'BAJO': 'LOW',
+    'MEDIO': 'MEDIUM',
+    'ALTO': 'HIGH',
+  };
+
+  const statusLabels: Record<'ALL' | MissionStatus, string> = {
+    'ALL': 'ALL',
+    'PENDIENTE': 'PENDING',
+    'EN_PROGRESO': 'IN PROGRESS',
+    'COMPLETADA': 'COMPLETED',
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <HeaderHUD
-        title="OPERACIONES TÁCTICAS"
-        subtitle={`REGISTRO GLOBAL: ${missions.length} MISIONES`}
+        title="MISSIONS"
+        subtitle={`GLOBAL REGISTRY: ${filteredMissions.length} MISSIONS`}
       />
 
       {/* Filter Tabs Section */}
       <View style={styles.filterSection}>
         {/* Threat Level Filter Tabs */}
-        <Text style={styles.filterHeader}>NIVEL DE PELIGRO:</Text>
+        <Text style={styles.filterHeader}>THREAT LEVEL:</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -90,10 +131,16 @@ export const MissionsScreen: React.FC = () => {
           {(['ALL', 'BAJO', 'MEDIO', 'ALTO'] as const).map((threat) => {
             const isSelected = threatFilter === threat;
             const getThreatBorder = () => {
-              if (!isSelected) return colors.border;
+              if (!isSelected) return colors.borderCyan;
               if (threat === 'ALTO') return colors.dangerHigh;
               if (threat === 'MEDIO') return colors.dangerMedium;
               return colors.primary;
+            };
+            const getThreatBg = () => {
+              if (!isSelected) return colors.surfaceGlass;
+              if (threat === 'ALTO') return 'rgba(255, 61, 113, 0.15)';
+              if (threat === 'MEDIO') return 'rgba(255, 170, 0, 0.15)';
+              return colors.primaryGlow;
             };
 
             return (
@@ -101,8 +148,7 @@ export const MissionsScreen: React.FC = () => {
                 key={threat}
                 style={[
                   styles.filterTab,
-                  { borderColor: getThreatBorder() },
-                  isSelected && styles.filterTabActive,
+                  { borderColor: getThreatBorder(), backgroundColor: getThreatBg() },
                 ]}
                 onPress={() => setThreatFilter(threat)}
                 activeOpacity={0.7}
@@ -113,7 +159,7 @@ export const MissionsScreen: React.FC = () => {
                     isSelected && { color: getThreatBorder(), fontWeight: '800' },
                   ]}
                 >
-                  {threat === 'ALL' ? 'TODOS' : `PELIGRO ${threat}`}
+                  {threatLabels[threat]}
                 </Text>
               </TouchableOpacity>
             );
@@ -121,7 +167,7 @@ export const MissionsScreen: React.FC = () => {
         </ScrollView>
 
         {/* Status Filter Tabs */}
-        <Text style={[styles.filterHeader, { marginTop: 6 }]}>ESTADO DE MISIÓN:</Text>
+        <Text style={[styles.filterHeader, { marginTop: 12 }]}>MISSION STATUS:</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -145,21 +191,31 @@ export const MissionsScreen: React.FC = () => {
                     isSelected && styles.filterTabTextPrimary,
                   ]}
                 >
-                  {status === 'ALL' ? 'TODOS' : status.replace('_', ' ')}
+                  {statusLabels[status]}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
+
+        {isAdmin && (
+          <HudButton
+            title="NEW MISSION"
+            onPress={() => navigation.navigate('MissionForm', {})}
+            variant="primary"
+            size="md"
+            style={{ marginTop: 12 }}
+          />
+        )}
       </View>
 
       {/* Main Content Area */}
       {isLoading && !refreshing ? (
-        <LoadingOverlay message="DESCARGANDO TELEMETRÍA DE MISIONES..." fullscreen />
+        <LoadingOverlay message="DOWNLOADING MISSION TELEMETRY..." fullscreen />
       ) : error ? (
         <View style={styles.centerContainer}>
           <ErrorMessage
-            title="FALLA DE ENLACE DE MISIONES"
+            title="MISSION LINK FAILURE"
             message={error}
             onRetry={fetchMissions}
           />
@@ -172,6 +228,8 @@ export const MissionsScreen: React.FC = () => {
             <MissionCard
               mission={item}
               onPressHero={handleHeroPress}
+              onPressEdit={isAdmin ? (id: number) => navigation.navigate('MissionForm', { missionId: id }) : undefined}
+              onPressDelete={isAdmin ? handleDelete : undefined}
             />
           )}
           contentContainerStyle={styles.listContent}
@@ -179,16 +237,16 @@ export const MissionsScreen: React.FC = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={colors.dangerHigh}
-              colors={[colors.dangerHigh]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
           ListEmptyComponent={
             <EmptyState
               icon="navigate-circle-outline"
-              title="SIN MISIONES ACTIVAS"
-              message="No existen misiones tácticas que coincidan con los filtros de peligro o estado seleccionados."
-              actionTitle="RESTABLECER FILTROS"
+              title="NO ACTIVE MISSIONS"
+              message="No tactical missions found matching the selected threat or status filters."
+              actionTitle="RESET FILTERS"
               onAction={() => {
                 setThreatFilter('ALL');
                 setStatusFilter('ALL');
@@ -204,57 +262,56 @@ export const MissionsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.backgroundDark,
   },
   filterSection: {
     paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: 12,
+    paddingBottom: 12,
     backgroundColor: colors.backgroundDark,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderCyan,
   },
   filterHeader: {
     fontFamily: typography.fontFamily.mono,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '700',
     color: colors.textMuted,
-    letterSpacing: 1,
-    marginBottom: 6,
+    letterSpacing: 1.5,
+    marginBottom: 8,
   },
   filterTabsRow: {
     gap: 8,
     paddingBottom: 4,
   },
   filterTab: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  filterTabActive: {
-    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+    borderColor: colors.borderCyan,
+    backgroundColor: colors.surfaceGlass,
+    minWidth: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterTabActivePrimary: {
     borderColor: colors.primary,
-    backgroundColor: 'rgba(0, 229, 255, 0.15)',
+    backgroundColor: colors.primaryGlow,
   },
   filterTabText: {
     fontFamily: typography.fontFamily.mono,
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.textMuted,
-    letterSpacing: 0.8,
+    letterSpacing: 1,
   },
   filterTabTextPrimary: {
     color: colors.primary,
-    fontWeight: '800',
   },
   listContent: {
     padding: 16,
-    paddingBottom: 24,
+    paddingBottom: 80, // Allow for tab bar
     flexGrow: 1,
   },
   centerContainer: {

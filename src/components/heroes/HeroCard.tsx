@@ -12,8 +12,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Hero } from '../../types';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
-import { StatusBadge } from '../common/StatusBadge';
-import { PowerBar } from '../common/PowerBar';
 
 interface HeroCardProps {
   hero: Hero;
@@ -31,6 +29,22 @@ export const HeroCard: React.FC<HeroCardProps> = ({
   style,
 }) => {
   const [imageError, setImageError] = useState(false);
+  const isCovert = hero.estado === 'INACTIVO';
+
+  // Determine Icon based on name logic from Web
+  let iconName: keyof typeof Ionicons.glyphMap = 'shield-outline';
+  const name = hero.nombre.toUpperCase();
+  if (name.includes('IRON')) iconName = 'hardware-chip-outline';
+  else if (name.includes('SPIDER')) iconName = 'bug-outline';
+  else if (name.includes('CAPTAIN') || name.includes('AMERICA')) iconName = 'shield-outline';
+  else if (name.includes('THOR')) iconName = 'flash-outline';
+  else if (name.includes('HULK')) iconName = 'fitness-outline';
+  else if (name.includes('WIDOW')) iconName = 'medical-outline';
+  else if (name.includes('PANTHER')) iconName = 'paw-outline';
+  else if (name.includes('STRANGE')) iconName = 'eye-outline';
+  else if (name.includes('ANT')) iconName = 'scan-outline';
+  else if (name.includes('MARVEL')) iconName = 'star-outline';
+  else if (name.includes('DEADPOOL')) iconName = 'happy-outline';
 
   return (
     <TouchableOpacity
@@ -38,74 +52,69 @@ export const HeroCard: React.FC<HeroCardProps> = ({
       onPress={onPress}
       style={[styles.container, style]}
     >
-      {/* HUD Corner accents */}
-      <View style={[styles.corner, styles.topLeft]} />
-      <View style={[styles.corner, styles.topRight]} />
-      <View style={[styles.corner, styles.bottomLeft]} />
-      <View style={[styles.corner, styles.bottomRight]} />
+      <View style={[styles.imageContainer, isCovert && { borderBottomColor: colors.borderCyan }]}>
+        <Image
+          source={{
+            uri: hero.imagen_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDAfQWN9tiQ0bvTT7IEP1tALNwpsB1gCusw-5Y7VERnlRtr2kcFGt6uBTDta_BPsV0pY84POUiP6zzL_K99KkFdzw_woJODSHE7zbPz9iHOZKD3tRGT6_G2o0D4Q-kTFJfIPCbqRo0ZTMydh7eWgn0k0nnxHTpAjNb4x5wgQ75Rz6qKpPaMTRUc5perDfVWExOxANYtUDnPgVj5yQCHx2KBMAF-pNUxYHH9V_zwbF_EiwYqJfMoRedl'
+          }}
+          style={styles.image}
+        />
 
-      <View style={styles.cardContent}>
-        {/* Hero Avatar / Image */}
-        <View style={styles.imageWrapper}>
-          {hero.imagen_url && !imageError ? (
-            <Image
-              source={{ uri: hero.imagen_url }}
-              style={styles.image}
-              resizeMode="cover"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <View style={styles.placeholderImage}>
-              <Ionicons name="shield" size={28} color={colors.primary} />
-            </View>
-          )}
-          <View style={styles.imageFrame} />
+        {/* Status Badge */}
+        <View style={[styles.statusBadge, isCovert && styles.statusBadgeCovert]}>
+          <View style={[styles.statusDot, !isCovert && styles.statusDotActive]} />
+          <Text style={[styles.statusText, isCovert && styles.statusTextCovert]}>{hero.estado}</Text>
         </View>
 
-        {/* Info Column */}
-        <View style={styles.infoColumn}>
-          <View style={styles.headerRow}>
-            <View style={styles.nameContainer}>
-              <Text style={styles.name} numberOfLines={1}>
-                {hero.nombre}
-              </Text>
-              <Text style={styles.realName} numberOfLines={1}>
-                {hero.nombre_real}
-              </Text>
-            </View>
+        {/* ID Badge */}
+        <View style={styles.idBadge}>
+          <Text style={styles.idText}>ID: STK-{hero.id.toString().padStart(3, '0')}</Text>
+        </View>
 
-            {onToggleFavorite && (
-              <TouchableOpacity
-                onPress={onToggleFavorite}
-                style={styles.favoriteButton}
-                activeOpacity={0.7}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons
-                  name={isFavorite ? 'star' : 'star-outline'}
-                  size={20}
-                  color={isFavorite ? colors.secondary : colors.textMuted}
-                />
-              </TouchableOpacity>
-            )}
+        {/* Favorite Button */}
+        {onToggleFavorite && (
+          <TouchableOpacity 
+            onPress={onToggleFavorite} 
+            style={[styles.favoriteBtn, isFavorite && styles.favoriteBtnActive]}
+          >
+            <Ionicons name={isFavorite ? 'star' : 'star'} size={18} color={isFavorite ? colors.primary : colors.textMuted} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.infoContainer}>
+        <View style={styles.headerRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.name, isCovert && { color: colors.textSecondary }]}>{hero.nombre}</Text>
+            <Text style={styles.realName}>{hero.nombre_real || 'CLASSIFIED'}</Text>
           </View>
+          <Ionicons name={iconName} size={28} color={isCovert ? colors.textMuted : colors.primary} style={{ opacity: 0.7 }} />
+        </View>
 
-          {/* Primary Power */}
-          <Text style={styles.powerText} numberOfLines={2}>
-            {hero.poder_principal}
-          </Text>
+        <View style={styles.powerGrid}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>MAIN POWER</Text>
+            <Text style={styles.value} numberOfLines={1}>{hero.poder_principal}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>POWER LEVEL</Text>
+            <Text style={[styles.value, { color: colors.textSecondary }]}>LVL_{hero.nivel_poder}</Text>
+          </View>
+        </View>
 
-          {/* Power Level Gauge */}
-          <PowerBar level={hero.nivel_poder} compact style={styles.powerBar} />
-
-          {/* Status Badge & Missions count */}
-          <View style={styles.footerRow}>
-            <StatusBadge type="hero_status" value={hero.estado} size="sm" />
-            {typeof hero.missions_count === 'number' && (
-              <Text style={styles.missionsCount}>
-                {hero.missions_count} {hero.missions_count === 1 ? 'MISIÓN' : 'MISIONES'}
-              </Text>
-            )}
+        <View style={styles.readinessSection}>
+          <View style={styles.readinessRow}>
+            <Text style={styles.label}>COMBAT_READINESS</Text>
+            <Text style={[styles.label, { color: isCovert ? colors.textMuted : colors.primary }]}>{hero.nivel_poder}%</Text>
+          </View>
+          <View style={styles.progressBarBg}>
+            <View style={[
+              styles.progressBarFill, 
+              { 
+                width: `${Math.min(100, hero.nivel_poder)}%`, 
+                backgroundColor: isCovert ? colors.textMuted : colors.primary 
+              }
+            ]} />
           </View>
         </View>
       </View>
@@ -115,126 +124,141 @@ export const HeroCard: React.FC<HeroCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
-    borderRadius: 10,
+    backgroundColor: colors.surfaceGlass,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 12,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  corner: {
-    position: 'absolute',
-    width: 6,
-    height: 6,
     borderColor: colors.borderCyan,
-  },
-  topLeft: {
-    top: 0,
-    left: 0,
-    borderTopWidth: 2,
-    borderLeftWidth: 2,
-  },
-  topRight: {
-    top: 0,
-    right: 0,
-    borderTopWidth: 2,
-    borderRightWidth: 2,
-  },
-  bottomLeft: {
-    bottom: 0,
-    left: 0,
-    borderBottomWidth: 2,
-    borderLeftWidth: 2,
-  },
-  bottomRight: {
-    bottom: 0,
-    right: 0,
-    borderBottomWidth: 2,
-    borderRightWidth: 2,
-  },
-  cardContent: {
-    flexDirection: 'row',
-    padding: 12,
-  },
-  imageWrapper: {
-    width: 80,
-    height: 96,
-    borderRadius: 6,
+    marginBottom: 16,
     overflow: 'hidden',
-    backgroundColor: colors.surfaceElevated,
+  },
+  imageContainer: {
+    height: 256,
     position: 'relative',
-    marginRight: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderCyan,
   },
   image: {
     width: '100%',
     height: '100%',
+    opacity: 0.6,
   },
-  placeholderImage: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceElevated,
-  },
-  imageFrame: {
+  statusBadge: {
     position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderColor: 'rgba(0, 229, 255, 0.3)',
     borderWidth: 1,
-    borderColor: colors.borderCyan,
-    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
-  infoColumn: {
-    flex: 1,
-    justifyContent: 'space-between',
+  statusBadgeCovert: {
+    borderColor: 'rgba(156, 163, 175, 0.3)',
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.textMuted,
+    marginRight: 4,
+  },
+  statusDotActive: {
+    backgroundColor: colors.primary,
+  },
+  statusText: {
+    fontFamily: typography.fontFamily.mono,
+    fontSize: 10,
+    color: colors.primary,
+  },
+  statusTextCovert: {
+    color: colors.textSecondary,
+  },
+  idBadge: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 4,
+    borderRadius: 4,
+  },
+  idText: {
+    fontFamily: typography.fontFamily.mono,
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  favoriteBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderColor: 'rgba(0, 229, 255, 0.2)',
+    borderWidth: 1,
+    padding: 8,
+    borderRadius: 20,
+  },
+  favoriteBtnActive: {
+    backgroundColor: 'rgba(0, 229, 255, 0.2)',
+    borderColor: colors.primary,
+  },
+  infoContainer: {
+    padding: 16,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-  },
-  nameContainer: {
-    flex: 1,
-    marginRight: 8,
+    marginBottom: 16,
   },
   name: {
     fontFamily: typography.fontFamily.mono,
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 24,
     color: colors.text,
-    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    fontWeight: '800',
   },
   realName: {
+    fontFamily: typography.fontFamily.mono,
     fontSize: 12,
     color: colors.textMuted,
-    marginTop: 1,
   },
-  favoriteButton: {
-    padding: 4,
-  },
-  powerText: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginTop: 4,
-    lineHeight: 15,
-  },
-  powerBar: {
-    marginVertical: 4,
-  },
-  footerRow: {
+  powerGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 4,
+    gap: 16,
+    marginBottom: 16,
   },
-  missionsCount: {
+  label: {
     fontFamily: typography.fontFamily.mono,
     fontSize: 10,
-    color: colors.primary,
-    letterSpacing: 0.8,
+    color: colors.textMuted,
+    marginBottom: 4,
+  },
+  value: {
+    fontFamily: typography.fontFamily.mono,
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  readinessSection: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(156, 163, 175, 0.3)',
+    paddingTop: 16,
+  },
+  readinessRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  progressBarBg: {
+    height: 4,
+    backgroundColor: colors.borderCyan,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
   },
 });
 

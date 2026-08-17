@@ -7,77 +7,53 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Modal,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { HudCard } from '../../components/common/HudCard';
 import { HudButton } from '../../components/common/HudButton';
-import { HudInput } from '../../components/common/HudInput';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
-import {
-  getApiBaseUrl,
-  saveCustomApiBaseUrl,
-  resetCustomApiBaseUrl,
-  DEFAULT_API_BASE_URL,
-} from '../../config/env';
-import { updateApiClientBaseUrl } from '../../api/client';
+import { HudInput } from '../../components/common/HudInput';
 
 export const LoginScreen: React.FC = () => {
-  const { login, isLoading, error, clearError } = useAuth();
-
+  const { login, register, isLoading, error, clearError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-
-  // Network Configuration Modal
-  const [isConfigModalVisible, setIsConfigModalVisible] = useState(false);
-  const [customUrl, setCustomUrl] = useState(getApiBaseUrl());
 
   const handleLogin = async () => {
     setLocalError(null);
     clearError();
 
-    if (!email.trim()) {
-      setLocalError('Ingrese su identificador o correo electrónico institucional.');
-      return;
+    if (isRegistering) {
+      if (!name.trim() || !email.trim() || !password || !passwordConfirm) {
+        setLocalError('All fields are required for registration.');
+        return;
+      }
+      if (password !== passwordConfirm) {
+        setLocalError('Passwords do not match.');
+        return;
+      }
+      await register({
+        nombre: name,
+        email,
+        password,
+        password_confirmation: passwordConfirm,
+        rol: 'CONSULTA'
+      });
+    } else {
+      if (!email.trim() || !password) {
+        setLocalError('Credenciales inválidas o incompletas.');
+        return;
+      }
+      await login(email, password);
     }
-
-    if (!password) {
-      setLocalError('Ingrese su clave de acceso de seguridad.');
-      return;
-    }
-
-    await login(email, password);
-  };
-
-  const handleQuickFill = (fillEmail: string, fillPass: string) => {
-    setEmail(fillEmail);
-    setPassword(fillPass);
-    setLocalError(null);
-    clearError();
-  };
-
-  const handleSaveApiUrl = async () => {
-    try {
-      await saveCustomApiBaseUrl(customUrl);
-      updateApiClientBaseUrl(getApiBaseUrl());
-      setIsConfigModalVisible(false);
-      Alert.alert('Configuración Guardada', `Endpoint activo: ${getApiBaseUrl()}`);
-    } catch {
-      Alert.alert('Error', 'No se pudo guardar la URL de la API');
-    }
-  };
-
-  const handleResetApiUrl = async () => {
-    await resetCustomApiBaseUrl();
-    setCustomUrl(getApiBaseUrl());
-    updateApiClientBaseUrl(getApiBaseUrl());
-    Alert.alert('Restablecido', `Endpoint predeterminado: ${DEFAULT_API_BASE_URL}`);
   };
 
   const displayError = localError || error;
@@ -92,169 +68,122 @@ export const LoginScreen: React.FC = () => {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Top System Bar */}
-          <View style={styles.topBar}>
-            <View style={styles.securityStatus}>
-              <View style={styles.liveDot} />
-              <Text style={styles.securityText}>S.H.I.E.L.D. SECURE PROTOCOL // 256-BIT ENCRYPTION</Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => setIsConfigModalVisible(true)}
-              style={styles.configButton}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="settings-outline" size={18} color={colors.primary} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Logo & Header */}
-          <View style={styles.headerSection}>
-            <View style={styles.arcReactorContainer}>
-              <View style={styles.arcOuterRing}>
-                <View style={styles.arcInnerRing}>
-                  <Ionicons name="shield-half" size={40} color={colors.primary} />
-                </View>
-              </View>
-            </View>
-
-            <Text style={styles.title}>MARVEL MISSION CONTROL</Text>
-            <Text style={styles.subtitle}>S.H.I.E.L.D. CENTRAL TACTICAL COMMAND</Text>
-            <Text style={styles.terminalPrompt}>AUTENTICACIÓN DE AGENTE REQUERIDA</Text>
-          </View>
-
-          {/* Login Card */}
+          {/* Main Cinematic Card Container */}
           <HudCard variant="glow" style={styles.card}>
+            {/* System Scan Line */}
+            <View style={styles.scanLine} />
+
+            {/* Logo / Branding */}
+            <View style={styles.headerSection}>
+              <MaterialIcons name="all-inclusive" size={60} color={colors.text} style={styles.logoIcon} />
+              <Text style={styles.title}>HEROS ORG.</Text>
+              <Text style={styles.subtitle}>
+                {isRegistering ? 'NEW OPERATOR REGISTRATION' : 'AUTHENTICATION GATEWAY'}
+              </Text>
+            </View>
+
+            {/* Error Message */}
             {displayError && (
               <ErrorMessage
-                title="ACCESO DENEGADO"
+                title="ACCESS DENIED"
                 message={displayError}
-                style={styles.errorBanner}
               />
             )}
 
-            <HudInput
-              label="CORREO ELECTRÓNICO / AGENT ID"
-              placeholder="agente@shield.gov"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                if (localError) setLocalError(null);
-              }}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoCorrect={false}
-              leftIcon="mail-outline"
-            />
+            {/* Form Fields */}
+            <View style={styles.formContainer}>
+              {isRegistering && (
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelContainer}>
+                    <MaterialIcons name="person" size={14} color={colors.primary} />
+                    <Text style={styles.label}>OPERATOR_NAME</Text>
+                  </View>
+                  <HudInput
+                    value={name}
+                    onChangeText={setName}
+                    placeholder="ENTER FULL NAME"
+                    autoCapitalize="words"
+                    editable={!isLoading}
+                  />
+                </View>
+              )}
 
-            <HudInput
-              label="CLAVE DE SEGURIDAD / ACCESS KEY"
-              placeholder="••••••••••••"
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                if (localError) setLocalError(null);
-              }}
-              isPassword
-              leftIcon="lock-closed-outline"
-            />
+              <View style={styles.inputGroup}>
+                <View style={styles.labelContainer}>
+                  <MaterialIcons name="badge" size={14} color={colors.primary} />
+                  <Text style={styles.label}>OPERATOR_ID (EMAIL)</Text>
+                </View>
+                <HudInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="ENTER ID SEQUENCE"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!isLoading}
+                />
+              </View>
 
+              <View style={styles.inputGroup}>
+                <View style={styles.labelContainer}>
+                  <MaterialIcons name="lock" size={14} color={colors.primary} />
+                  <Text style={styles.label}>PASSCODE</Text>
+                </View>
+                <HudInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="••••••••••••"
+                  secureTextEntry
+                  editable={!isLoading}
+                />
+              </View>
+
+              {isRegistering && (
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelContainer}>
+                    <MaterialIcons name="lock-reset" size={14} color={colors.primary} />
+                    <Text style={styles.label}>CONFIRM_PASSCODE</Text>
+                  </View>
+                  <HudInput
+                    value={passwordConfirm}
+                    onChangeText={setPasswordConfirm}
+                    placeholder="••••••••••••"
+                    secureTextEntry
+                    editable={!isLoading}
+                  />
+                </View>
+              )}
+            </View>
+
+            {/* Submit Action */}
             <HudButton
-              title="AUTORIZAR ACCESO AL SISTEMA"
+              title={isRegistering ? 'REGISTER_OPERATOR' : 'INITIATE_PROTOCOL'}
               onPress={handleLogin}
               loading={isLoading}
               variant="primary"
               size="lg"
               style={styles.loginButton}
-              icon={<Ionicons name="finger-print-outline" size={20} color={colors.backgroundDark} />}
+              icon={<MaterialIcons name="arrow-forward" size={20} color={colors.backgroundDark} />}
             />
 
-            {/* Quick-Fill Credentials for Academic Review */}
-            <View style={styles.quickFillSection}>
-              <Text style={styles.quickFillLabel}>CREDENCIALES DE PRUEBA RÁPIDA:</Text>
-              <View style={styles.quickFillButtonsRow}>
-                <HudButton
-                  title="ADMIN (NICK FURY)"
-                  onPress={() => handleQuickFill('admin@shield.gov', 'Admin1234!')}
-                  variant="secondary"
-                  size="sm"
-                  style={styles.quickButton}
-                />
-                <HudButton
-                  title="CONSULTA (COULSON)"
-                  onPress={() => handleQuickFill('consulta@shield.gov', 'Consulta1234!')}
-                  variant="outline"
-                  size="sm"
-                  style={styles.quickButton}
-                />
-              </View>
-            </View>
+            {/* Toggle Register/Login */}
+            <TouchableOpacity 
+              style={styles.toggleContainer}
+              onPress={() => {
+                setIsRegistering(!isRegistering);
+                setLocalError(null);
+                clearError();
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.toggleText}>
+                {isRegistering 
+                  ? 'EXISTING_OPERATOR? INITIALIZE_LOGIN' 
+                  : 'NEW_OPERATOR? REQUEST_ACCESS (CONSULTA)'}
+              </Text>
+            </TouchableOpacity>
           </HudCard>
-
-          {/* Footer Telemetry */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              CONEXIÓN DIRECTA REST API: {getApiBaseUrl()}
-            </Text>
-            <Text style={styles.footerSubtext}>
-              STRATEGIC HOMELAND INTERVENTION, ENFORCEMENT AND LOGISTICS DIVISION
-            </Text>
-          </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      {/* Network Configuration Modal */}
-      <Modal
-        visible={isConfigModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setIsConfigModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <HudCard variant="glow" style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Ionicons name="server-outline" size={24} color={colors.primary} />
-              <Text style={styles.modalTitle}>CONFIGURACIÓN DE ENLACE API</Text>
-            </View>
-
-            <Text style={styles.modalDescription}>
-              Ajuste la dirección IP del servidor backend Laravel según su entorno de red local:
-            </Text>
-
-            <HudInput
-              label="API_BASE_URL"
-              value={customUrl}
-              onChangeText={setCustomUrl}
-              autoCapitalize="none"
-              autoCorrect={false}
-              leftIcon="link-outline"
-            />
-
-            <View style={styles.modalActions}>
-              <HudButton
-                title="GUARDAR Y APLICAR"
-                onPress={handleSaveApiUrl}
-                variant="primary"
-                size="md"
-                style={styles.modalActionButton}
-              />
-              <HudButton
-                title="RESTABLECER IP POR DEFECTO"
-                onPress={handleResetApiUrl}
-                variant="outline"
-                size="sm"
-                style={styles.modalActionButton}
-              />
-              <HudButton
-                title="CANCELAR"
-                onPress={() => setIsConfigModalVisible(false)}
-                variant="ghost"
-                size="sm"
-                style={styles.modalActionButton}
-              />
-            </View>
-          </HudCard>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -262,191 +191,90 @@ export const LoginScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.backgroundDark,
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
     justifyContent: 'center',
-  },
-  topBar: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  securityStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  liveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.statusActive,
-    marginRight: 6,
-  },
-  securityText: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 9,
-    color: colors.textMuted,
-    letterSpacing: 0.8,
-  },
-  configButton: {
-    padding: 6,
-    borderRadius: 6,
-    backgroundColor: colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: colors.borderCyan,
-  },
-  headerSection: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  arcReactorContainer: {
-    marginBottom: 16,
-  },
-  arcOuterRing: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    backgroundColor: 'rgba(0, 229, 255, 0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-  arcInnerRing: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.text,
-    letterSpacing: 2,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 11,
-    color: colors.primary,
-    letterSpacing: 1.5,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  terminalPrompt: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 10,
-    color: colors.textDim,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+    padding: 16,
   },
   card: {
     width: '100%',
-    padding: 20,
-  },
-  errorBanner: {
-    marginBottom: 16,
-  },
-  loginButton: {
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  quickFillSection: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: 16,
-    marginTop: 8,
-  },
-  quickFillLabel: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 10,
-    color: colors.textMuted,
-    letterSpacing: 1,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  quickFillButtonsRow: {
-    gap: 8,
-  },
-  quickButton: {
-    width: '100%',
-  },
-  footer: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  footerText: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 10,
-    color: colors.textMuted,
-    letterSpacing: 0.5,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  footerSubtext: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 8,
-    color: colors.textDim,
-    letterSpacing: 0.5,
-    textAlign: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalCard: {
-    width: '100%',
     maxWidth: 400,
-    padding: 20,
+    padding: 32,
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.8)', // surface-charcoal equivalent
   },
-  modalHeader: {
+  scanLine: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: colors.primary,
+    opacity: 0.8,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  logoIcon: {
+    marginBottom: 8,
+  },
+  title: {
+    fontWeight: '800',
+    fontSize: 32,
+    color: colors.text,
+    textTransform: 'uppercase',
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontFamily: typography.fontFamily.mono,
+    fontSize: 10,
+    color: colors.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginTop: 8,
+  },
+  formContainer: {
+    width: '100%',
+    marginBottom: 32,
+  },
+  inputGroup: {
+    marginBottom: 24,
+  },
+  labelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
+    gap: 8,
   },
-  modalTitle: {
+  label: {
     fontFamily: typography.fontFamily.mono,
-    fontSize: 14,
-    fontWeight: '800',
-    color: colors.text,
-    letterSpacing: 1,
-    marginLeft: 10,
-  },
-  modalDescription: {
     fontSize: 12,
-    color: colors.textSecondary,
-    marginBottom: 16,
-    lineHeight: 18,
+    color: colors.primary,
+    letterSpacing: 1,
   },
-  modalActions: {
-    gap: 10,
-    marginTop: 10,
-  },
-  modalActionButton: {
+  loginButton: {
     width: '100%',
   },
+  toggleContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+    padding: 8,
+  },
+  toggleText: {
+    fontFamily: typography.fontFamily.mono,
+    fontSize: 10,
+    color: colors.primaryMuted,
+    textDecorationLine: 'underline',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
 });
-
-export default LoginScreen;

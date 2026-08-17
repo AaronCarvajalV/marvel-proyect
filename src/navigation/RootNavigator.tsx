@@ -5,6 +5,8 @@ import { RootStackParamList } from './types';
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
 import { HeroDetailScreen } from '../screens/heroes/HeroDetailScreen';
+import { HeroFormScreen } from '../screens/heroes/HeroFormScreen';
+import { MissionFormScreen } from '../screens/missions/MissionFormScreen';
 import { useAuth } from '../context/AuthContext';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { colors } from '../theme/colors';
@@ -43,6 +45,20 @@ export const RootNavigator: React.FC = () => {
               component={HeroDetailScreen}
               options={{
                 animation: 'slide_from_right',
+              }}
+            />
+            <Stack.Screen
+              name="HeroForm"
+              component={HeroFormScreen}
+              options={{
+                animation: 'slide_from_bottom',
+              }}
+            />
+            <Stack.Screen
+              name="MissionForm"
+              component={MissionFormScreen}
+              options={{
+                animation: 'slide_from_bottom',
               }}
             />
           </>

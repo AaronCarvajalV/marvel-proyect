@@ -37,10 +37,29 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     if (type === 'clearance') {
       return `CLEARANCE: ${value}`;
     }
+    
+    const threatMap: Record<string, string> = {
+      'BAJO': 'LOW',
+      'MEDIO': 'MEDIUM',
+      'ALTO': 'HIGH',
+    };
+
+    const statusMap: Record<string, string> = {
+      'ACTIVO': 'ACTIVE',
+      'INACTIVO': 'INACTIVE',
+      'RETIRADO': 'RETIRED',
+      'COMPROMETIDO': 'COMPROMISED',
+      'DESCONOCIDO': 'UNKNOWN',
+      'PENDIENTE': 'PENDING',
+      'EN_PROGRESO': 'IN PROGRESS',
+      'COMPLETADA': 'COMPLETED'
+    };
+
     if (type === 'threat') {
-      return `PELIGRO ${value}`;
+      return `THREAT: ${threatMap[value] || value}`;
     }
-    return value.replace('_', ' ');
+    
+    return statusMap[value] || value.replace('_', ' ');
   };
 
   return (

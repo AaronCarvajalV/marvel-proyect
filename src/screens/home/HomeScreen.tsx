@@ -7,59 +7,52 @@ import {
   RefreshControl,
   TouchableOpacity,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-import { useFavorites } from '../../context/FavoritesContext';
 import { heroesApi, missionsApi } from '../../api';
+import { Hero, Mission } from '../../types';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { HudCard } from '../../components/common/HudCard';
-import { HudButton } from '../../components/common/HudButton';
 import { StatusBadge } from '../../components/common/StatusBadge';
-import { getApiBaseUrl } from '../../config/env';
 import { MainTabNavigationProp } from '../../navigation/types';
+import { LineChart, PieChart } from 'react-native-chart-kit';
+
+const screenWidth = Dimensions.get('window').width;
 
 export const HomeScreen: React.FC = () => {
-  const { user, logout, refreshUser } = useAuth();
-  const { favoritesCount } = useFavorites();
+  const { user, refreshUser } = useAuth();
   const navigation = useNavigation<MainTabNavigationProp>();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [stats, setStats] = useState({
-    totalHeroes: 0,
-    activeHeroes: 0,
-    totalMissions: 0,
-    activeMissions: 0,
-    loading: true,
-  });
+  const [heroes, setHeroes] = useState<Hero[]>([]);
+  const [missions, setMissions] = useState<Mission[]>([]);
 
   const loadDashboardStats = useCallback(async () => {
     try {
-      const [heroes, missions] = await Promise.all([
-        heroesApi.getHeroes().catch(() => []),
-        missionsApi.getMissions().catch(() => []),
+      const [hData, mData] = await Promise.all([
+        heroesApi.getHeroes().catch(() => [] as Hero[]),
+        missionsApi.getMissions().catch(() => [] as Mission[]),
       ]);
-
-      const activeHeroesCount = heroes.filter((h) => h.estado === 'ACTIVO').length;
-      const activeMissionsCount = missions.filter((m) => m.estado !== 'COMPLETADA').length;
-
-      setStats({
-        totalHeroes: heroes.length,
-        activeHeroes: activeHeroesCount,
-        totalMissions: missions.length,
-        activeMissions: activeMissionsCount,
-        loading: false,
-      });
+      setHeroes(hData);
+      setMissions(mData);
     } catch {
-      setStats((prev) => ({ ...prev, loading: false }));
+      // Fallback handled by catch above
     }
   }, []);
 
   useEffect(() => {
     loadDashboardStats();
+    
+    // Polling every 15 seconds
+    const interval = setInterval(() => {
+      loadDashboardStats();
+    }, 15000);
+    return () => clearInterval(interval);
   }, [loadDashboardStats]);
 
   const onRefresh = async () => {
@@ -68,201 +61,306 @@ export const HomeScreen: React.FC = () => {
     setRefreshing(false);
   };
 
-  const handleLogoutConfirm = () => {
+  const handleDelete = (missionId: number, missionTitle: string) => {
     Alert.alert(
-      'Cerrar Sesión',
-      '¿Desea cerrar la terminal y desconectar el enlace seguro de S.H.I.E.L.D.?',
+      'TERMINATE OPERATION',
+      `Are you sure you want to delete OP: ${missionTitle}?`,
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Desconectar',
+          text: 'Terminate',
           style: 'destructive',
           onPress: async () => {
-            await logout();
+            try {
+              await missionsApi.deleteMission(missionId);
+              setMissions(missions.filter(m => m.id !== missionId));
+            } catch {
+              Alert.alert('Error', 'Failed to delete operation');
+            }
           },
         },
       ]
     );
   };
 
-  const userName = user?.nombre || 'AGENTE';
-  const userRole = user?.rol || 'CONSULTA';
+  // Metrics
+  const totalAssets = heroes.length;
+  const totalMissions = missions.length;
+  const activeOps = missions.filter((m) => m.estado === 'EN_PROGRESO').length;
+  const pendingMissions = missions.filter((m) => m.estado === 'PENDIENTE').length;
+  
+  // Sort missions by latest
+  const recentMissions = [...missions]
+    .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+    .slice(0, 5);
+
+  // Charts Data
+  const pieData = [
+    {
+      name: 'PENDIENTE',
+      population: pendingMissions,
+      color: colors.secondaryDark,
+      legendFontColor: colors.textMuted,
+      legendFontSize: 11,
+    },
+    {
+      name: 'EN PROGRESO',
+      population: activeOps,
+      color: colors.primary,
+      legendFontColor: colors.textMuted,
+      legendFontSize: 11,
+    },
+    {
+      name: 'COMPLETADA',
+      population: missions.filter(m => m.estado === 'COMPLETADA').length,
+      color: colors.textMuted,
+      legendFontColor: colors.textMuted,
+      legendFontSize: 11,
+    },
+  ];
+
+  // Group missions by date for line chart
+  const missionsByDate = missions.reduce((acc, mission) => {
+    // Just taking the day and month for brief label
+    const dateObj = new Date(mission.fecha);
+    const dateStr = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+    acc[dateStr] = (acc[dateStr] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const sortedDates = Object.keys(missionsByDate).sort();
+  const lineLabels = sortedDates.length > 0 ? sortedDates : ['No Data'];
+  const lineDataPoints = sortedDates.length > 0 ? sortedDates.map(d => missionsByDate[d]) : [0];
+
+  const lineChartData = {
+    labels: lineLabels,
+    datasets: [
+      {
+        data: lineDataPoints,
+        color: (opacity = 1) => `rgba(0, 210, 255, ${opacity})`, // primary color
+        strokeWidth: 2,
+      },
+    ],
+  };
+
+  const chartConfig = {
+    backgroundGradientFrom: 'rgba(15, 23, 42, 0)',
+    backgroundGradientTo: 'rgba(15, 23, 42, 0)',
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity * 0.3})`,
+    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity * 0.5})`,
+    propsForDots: {
+      r: '4',
+      strokeWidth: '2',
+      stroke: '#00d2ff',
+    },
+    fillShadowGradientFrom: colors.primary,
+    fillShadowGradientTo: 'transparent',
+    fillShadowGradientFromOpacity: 0.2,
+    fillShadowGradientToOpacity: 0,
+    decimalPlaces: 0,
+  };
+
+  const isAdmin = user?.rol === 'ADMIN';
+  const { logout } = useAuth();
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
         {/* Top Protocol Status Bar */}
         <View style={styles.topProtocolBar}>
           <View style={styles.protocolStatus}>
             <View style={styles.pulseDot} />
-            <Text style={styles.protocolText}>JARVIS PROTOCOL // ONLINE</Text>
+            <Text style={styles.protocolText}>SYSTEM STATUS // OPTIMAL</Text>
           </View>
-          <TouchableOpacity
-            onPress={handleLogoutConfirm}
+        </View>
+
+        {/* Personalized Greeting */}
+        <HudCard variant="glow" style={styles.greetingCard}>
+          <Text style={styles.greetingTitle}>Welcome back, {user?.nombre || 'Operator-01'}.</Text>
+          <View style={styles.greetingStatus}>
+            <View style={styles.liveDot} />
+            <Text style={styles.greetingSub}>
+              System Status: <Text style={{ color: colors.primary, fontWeight: 'bold' }}>OPTIMAL</Text>
+            </Text>
+          </View>
+
+          <TouchableOpacity 
             style={styles.logoutButton}
+            onPress={logout}
             activeOpacity={0.7}
           >
-            <Ionicons name="power-outline" size={16} color={colors.dangerHigh} />
-            <Text style={styles.logoutText}>SALIR</Text>
+            <MaterialIcons name="power-settings-new" size={14} color={colors.danger} />
+            <Text style={styles.logoutText}>LOG OUT</Text>
+          </TouchableOpacity>
+        </HudCard>
+
+        {/* Technical Metrics Grid */}
+        <View style={styles.metricsGrid}>
+          {/* TOTAL ASSETS */}
+          <TouchableOpacity 
+            style={styles.metricBox} 
+            activeOpacity={0.7} 
+            onPress={() => navigation.navigate('Heroes')}
+          >
+            <View style={styles.metricHeader}>
+              <Text style={styles.metricLabel}>TOTAL_ASSETS</Text>
+              <MaterialIcons name="groups" size={16} color={colors.textMuted} />
+            </View>
+            <Text style={styles.metricValue}>{totalAssets}</Text>
+            <View style={styles.metricBarBg}>
+              <View style={[styles.metricBarFill, { width: `${Math.min(100, (totalAssets / 50) * 100)}%` }]} />
+            </View>
+          </TouchableOpacity>
+
+          {/* TOTAL MISSIONS */}
+          <TouchableOpacity 
+            style={styles.metricBox} 
+            activeOpacity={0.7} 
+            onPress={() => navigation.navigate('Missions')}
+          >
+            <View style={styles.metricHeader}>
+              <Text style={styles.metricLabel}>TOTAL_MISSIONS</Text>
+              <MaterialIcons name="route" size={16} color={colors.textMuted} />
+            </View>
+            <Text style={styles.metricValue}>{totalMissions}</Text>
+            <View style={styles.metricFooter}>
+              <MaterialIcons name="trending-up" size={12} color={colors.primary} />
+              <Text style={styles.metricFooterText}>LIVE TRACKING</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* ACTIVE OPS */}
+          <TouchableOpacity 
+            style={styles.metricBox} 
+            activeOpacity={0.7} 
+            onPress={() => navigation.navigate('Missions')}
+          >
+            <View style={styles.metricHeader}>
+              <Text style={[styles.metricLabel, { color: colors.primary }]}>ACTIVE_OPS</Text>
+              <MaterialIcons name="my-location" size={16} color={colors.primary} />
+            </View>
+            <Text style={[styles.metricValue, { color: colors.primary }]}>
+              {activeOps.toString().padStart(2, '0')}
+            </Text>
+            <View style={styles.metricBarsRow}>
+              {[...Array(4)].map((_, i) => (
+                <View key={i} style={[styles.miniBar, i < activeOps ? { backgroundColor: colors.primary } : {}]} />
+              ))}
+            </View>
+          </TouchableOpacity>
+
+          {/* PENDING PROTOCOLS */}
+          <TouchableOpacity 
+            style={styles.metricBox} 
+            activeOpacity={0.7} 
+            onPress={() => navigation.navigate('Missions')}
+          >
+            <View style={styles.metricHeader}>
+              <Text style={[styles.metricLabel, { color: colors.secondaryDark }]}>PENDING_PROTOCOLS</Text>
+              <MaterialIcons name="warning" size={16} color={colors.secondaryDark} />
+            </View>
+            <Text style={[styles.metricValue, { color: colors.secondaryDark }]}>
+              {pendingMissions.toString().padStart(2, '0')}
+            </Text>
+            <View style={styles.metricFooter}>
+              <Text style={[styles.metricFooterText, { color: colors.secondaryDark }]}>
+                {pendingMissions > 0 ? 'REQUIRES_AUTHORIZATION' : 'ALL_CLEAR'}
+              </Text>
+            </View>
           </TouchableOpacity>
         </View>
 
-        {/* Welcome & Agent Profile Hero Card */}
-        <HudCard variant="glow" style={styles.profileCard}>
-          <View style={styles.profileRow}>
-            <View style={styles.avatarCircle}>
-              <Ionicons name="shield-checkmark" size={32} color={colors.primary} />
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.welcomeLabel}>WELCOME BACK,</Text>
-              <Text style={styles.agentName} numberOfLines={1}>
-                {userName.toUpperCase()}
-              </Text>
-              <Text style={styles.agentEmail}>{user?.email || 'authenticated@shield.gov'}</Text>
-            </View>
+        {/* Real-Time Metrics Visualization */}
+        <HudCard style={styles.chartCard}>
+          <View style={styles.chartHeader}>
+            <MaterialIcons name="trending-up" size={16} color={colors.primary} />
+            <Text style={styles.chartTitle}>OPERATION TRENDS</Text>
           </View>
-
-          <View style={styles.clearanceDivider} />
-
-          <View style={styles.clearanceRow}>
-            <Text style={styles.clearanceLabel}>NIVEL DE ACCESO:</Text>
-            <StatusBadge type="clearance" value={userRole} />
-          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <LineChart
+              data={lineChartData}
+              width={Math.max(screenWidth - 64, lineChartData.labels.length * 60)}
+              height={200}
+              chartConfig={chartConfig}
+              bezier
+              style={styles.chartStyle}
+              withInnerLines={false}
+            />
+          </ScrollView>
         </HudCard>
 
-        {/* Tactical Telemetry Counters */}
-        <Text style={styles.sectionHeader}>TELEMETRÍA GLOBAL DEL SISTEMA</Text>
-        <View style={styles.telemetryGrid}>
-          {/* Active Heroes Counter */}
-          <HudCard style={styles.telemetryCard}>
-            <Ionicons name="people-outline" size={24} color={colors.primary} style={styles.cardIcon} />
-            <Text style={styles.telemetryNumber}>{stats.activeHeroes}</Text>
-            <Text style={styles.telemetryLabel}>HÉROES ACTIVOS</Text>
-            <Text style={styles.telemetrySubtext}>TOTAL REGISTRADOS: {stats.totalHeroes}</Text>
-          </HudCard>
-
-          {/* Active Missions Counter */}
-          <HudCard style={styles.telemetryCard}>
-            <Ionicons name="flash-outline" size={24} color={colors.dangerMedium} style={styles.cardIcon} />
-            <Text style={[styles.telemetryNumber, { color: colors.dangerMedium }]}>
-              {stats.activeMissions}
-            </Text>
-            <Text style={styles.telemetryLabel}>MISIONES EN CURSO</Text>
-            <Text style={styles.telemetrySubtext}>TOTAL REGISTRADAS: {stats.totalMissions}</Text>
-          </HudCard>
-
-          {/* Bookmarks / Favorites Counter */}
-          <HudCard style={styles.telemetryCard}>
-            <Ionicons name="star-outline" size={24} color={colors.secondary} style={styles.cardIcon} />
-            <Text style={[styles.telemetryNumber, { color: colors.secondary }]}>
-              {favoritesCount}
-            </Text>
-            <Text style={styles.telemetryLabel}>FAVORITOS GUARDADOS</Text>
-            <Text style={styles.telemetrySubtext}>EN ASYNC STORAGE</Text>
-          </HudCard>
-
-          {/* S.H.I.E.L.D. Uplink Status */}
-          <HudCard style={styles.telemetryCard}>
-            <Ionicons name="wifi-outline" size={24} color={colors.statusActive} style={styles.cardIcon} />
-            <Text style={[styles.telemetryNumber, { color: colors.statusActive, fontSize: 18, marginTop: 4 }]}>
-              ENLACE ACTIVO
-            </Text>
-            <Text style={styles.telemetryLabel}>API REST V1</Text>
-            <Text style={styles.telemetrySubtext} numberOfLines={1}>
-              {getApiBaseUrl()}
-            </Text>
-          </HudCard>
-        </View>
-
-        {/* Quick Action Navigation Modules */}
-        <Text style={styles.sectionHeader}>MÓDULOS DE ACCESO TÁCTICO</Text>
-
-        {/* Module 1: Heroes Database */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate('Heroes')}
-          style={styles.moduleTouch}
-        >
-          <HudCard variant="glow" style={styles.moduleCard}>
-            <View style={styles.moduleContent}>
-              <View style={[styles.moduleIconBox, { borderColor: colors.borderCyan }]}>
-                <Ionicons name="people" size={28} color={colors.primary} />
-              </View>
-              <View style={styles.moduleDetails}>
-                <Text style={styles.moduleTitle}>BASE DE SUPERHÉROES</Text>
-                <Text style={styles.moduleDescription}>
-                  Consulta perfiles tácticos, niveles de poder (1-100), habilidades y expedientes clasificados.
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.primary} />
-            </View>
-          </HudCard>
-        </TouchableOpacity>
-
-        {/* Module 2: Mission Operations */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate('Missions')}
-          style={styles.moduleTouch}
-        >
-          <HudCard variant="glow" style={styles.moduleCard}>
-            <View style={styles.moduleContent}>
-              <View style={[styles.moduleIconBox, { borderColor: colors.borderDanger }]}>
-                <Ionicons name="navigate-circle" size={28} color={colors.dangerHigh} />
-              </View>
-              <View style={styles.moduleDetails}>
-                <Text style={styles.moduleTitle}>OPERACIONES TÁCTICAS / MISIONES</Text>
-                <Text style={styles.moduleDescription}>
-                  Supervisión de despliegues globales, niveles de peligro, estados y asignación de operativos.
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.dangerHigh} />
-            </View>
-          </HudCard>
-        </TouchableOpacity>
-
-        {/* Module 3: Tactical Favorites */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate('Favorites')}
-          style={styles.moduleTouch}
-        >
-          <HudCard variant="gold" style={styles.moduleCard}>
-            <View style={styles.moduleContent}>
-              <View style={[styles.moduleIconBox, { borderColor: colors.borderGold }]}>
-                <Ionicons name="star" size={28} color={colors.secondary} />
-              </View>
-              <View style={styles.moduleDetails}>
-                <Text style={styles.moduleTitle}>OPERATIVOS FAVORITOS</Text>
-                <Text style={styles.moduleDescription}>
-                  Acceso rápido a superhéroes marcados en almacenamiento táctico local offline.
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.secondary} />
-            </View>
-          </HudCard>
-        </TouchableOpacity>
-
-        {/* Security Notice / Logout Action */}
-        <View style={styles.logoutSection}>
-          <HudButton
-            title="DESCONECTAR TERMINAL SEGURA"
-            onPress={handleLogoutConfirm}
-            variant="outline"
-            size="md"
-            icon={<Ionicons name="power" size={18} color={colors.primary} />}
+        <HudCard style={styles.chartCard}>
+          <View style={styles.chartHeader}>
+            <MaterialIcons name="donut-large" size={16} color={colors.primary} />
+            <Text style={styles.chartTitle}>STATUS DISTRIBUTION</Text>
+          </View>
+          <PieChart
+            data={pieData}
+            width={screenWidth - 64}
+            height={200}
+            chartConfig={chartConfig}
+            accessor={"population"}
+            backgroundColor={"transparent"}
+            paddingLeft={"15"}
+            center={[10, 0]}
+            absolute
           />
-        </View>
+        </HudCard>
+
+        {/* Recent Intelligence (Grid) */}
+        <HudCard style={styles.recentGridCard}>
+          <View style={styles.chartHeader}>
+            <MaterialIcons name="view-list" size={16} color={colors.primary} />
+            <Text style={styles.chartTitle}>RECENT_INTELLIGENCE</Text>
+          </View>
+
+          {recentMissions.length === 0 ? (
+            <Text style={styles.noDataText}>NO RECORDS FOUND</Text>
+          ) : (
+            recentMissions.map((mission) => {
+              const hero = heroes.find(h => h.id === mission.superheroe_id);
+              return (
+                <View key={mission.id} style={styles.gridRow}>
+                  <View style={styles.gridRowHeader}>
+                    <Text style={styles.gridOpId}>#OP-{mission.id.toString().padStart(3, '0')}</Text>
+                    <Text style={styles.gridDate}>{new Date(mission.fecha).toLocaleDateString()}</Text>
+                  </View>
+                  <Text style={styles.gridTitle}>{mission.titulo}</Text>
+                  
+                  <View style={styles.gridDetails}>
+                    <StatusBadge type="mission_status" value={mission.estado} />
+                    <Text style={styles.gridAssigned}>
+                      {hero ? hero.nombre.toUpperCase() : 'UNASSIGNED'}
+                    </Text>
+                  </View>
+
+                  {isAdmin && (
+                    <View style={styles.gridActions}>
+                      <TouchableOpacity 
+                        style={styles.actionBtn}
+                        onPress={() => navigation.navigate('MissionForm', { missionId: mission.id })}
+                      >
+                        <MaterialIcons name="edit" size={16} color={colors.secondaryDark} />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.actionBtn}
+                        onPress={() => handleDelete(mission.id, mission.titulo)}
+                      >
+                        <MaterialIcons name="delete" size={16} color={colors.dangerHigh} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )
+            })
+          )}
+        </HudCard>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -271,16 +369,16 @@ export const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.backgroundDark,
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 40,
   },
   topProtocolBar: {
     flexDirection: 'row',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    justifyContent: 'space-between',
     marginBottom: 16,
   },
   protocolStatus: {
@@ -288,177 +386,204 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pulseDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.statusActive,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.primary,
     marginRight: 8,
   },
   protocolText: {
     fontFamily: typography.fontFamily.mono,
     fontSize: 10,
-    color: colors.primary,
-    letterSpacing: 1.2,
+    color: colors.primaryMuted,
+    letterSpacing: 1,
+  },
+  greetingCard: {
+    padding: 20,
+    marginBottom: 16,
+  },
+  greetingTitle: {
     fontWeight: '700',
+    fontSize: 20,
+    color: colors.primary,
+    marginBottom: 8,
+  },
+  greetingStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
+    marginRight: 8,
+  },
+  greetingSub: {
+    fontFamily: typography.fontFamily.mono,
+    fontSize: 10,
+    color: colors.primaryMuted,
+    textTransform: 'uppercase',
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 51, 102, 0.1)',
+    alignSelf: 'flex-start',
+    marginTop: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.borderDanger,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    borderColor: 'rgba(255, 61, 113, 0.3)',
+    backgroundColor: 'rgba(255, 61, 113, 0.1)',
   },
   logoutText: {
     fontFamily: typography.fontFamily.mono,
     fontSize: 10,
-    color: colors.dangerHigh,
     fontWeight: '700',
-    marginLeft: 4,
+    color: colors.text,
+    marginLeft: 6,
     letterSpacing: 1,
   },
-  profileCard: {
-    marginBottom: 20,
-    padding: 16,
-  },
-  profileRow: {
+  metricsGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
-  avatarCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    backgroundColor: 'rgba(0, 229, 255, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
+  metricBox: {
+    width: '48%',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
   },
-  profileInfo: {
+  metricHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  metricLabel: {
+    fontWeight: '700',
+    fontSize: 10,
+    color: colors.textMuted,
+    letterSpacing: 1,
     flex: 1,
   },
-  welcomeLabel: {
+  metricValue: {
     fontFamily: typography.fontFamily.mono,
-    fontSize: 11,
+    fontSize: 28,
+    color: colors.text,
+    fontWeight: 'bold',
+    marginTop: 8,
+  },
+  metricBarBg: {
+    height: 4,
+    backgroundColor: colors.surfaceVariant,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  metricBarFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+  },
+  metricFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metricFooterText: {
+    fontWeight: '500',
+    fontSize: 9,
+    color: colors.primary,
+  },
+  metricBarsRow: {
+    flexDirection: 'row',
+    gap: 4,
+    height: 4,
+  },
+  miniBar: {
+    flex: 1,
+    backgroundColor: colors.surfaceVariant,
+    borderRadius: 2,
+  },
+  chartCard: {
+    padding: 16,
+    marginBottom: 16,
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  chartTitle: {
+    fontWeight: '700',
+    fontSize: 12,
     color: colors.primary,
     letterSpacing: 1.5,
-    fontWeight: '700',
   },
-  agentName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.text,
-    letterSpacing: 0.5,
-    marginTop: 2,
+  chartStyle: {
+    marginVertical: 8,
+    borderRadius: 8,
   },
-  agentEmail: {
+  recentGridCard: {
+    padding: 16,
+  },
+  noDataText: {
+    fontFamily: typography.fontFamily.mono,
     fontSize: 12,
     color: colors.textMuted,
-    marginTop: 2,
+    textAlign: 'center',
+    marginVertical: 16,
   },
-  clearanceDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 12,
+  gridRow: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    paddingVertical: 12,
   },
-  clearanceRow: {
+  gridRowHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  gridOpId: {
+    fontFamily: typography.fontFamily.mono,
+    fontSize: 12,
+    color: colors.primary,
+  },
+  gridDate: {
+    fontWeight: '500',
+    fontSize: 10,
+    color: colors.textMuted,
+  },
+  gridTitle: {
+    fontFamily: typography.fontFamily.mono,
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  gridDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  clearanceLabel: {
+  gridAssigned: {
     fontFamily: typography.fontFamily.mono,
     fontSize: 11,
     color: colors.textMuted,
-    letterSpacing: 1,
   },
-  sectionHeader: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    letterSpacing: 1.5,
-    marginBottom: 12,
+  gridActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
     marginTop: 8,
+    gap: 16,
   },
-  telemetryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 20,
-  },
-  telemetryCard: {
-    width: '48%',
-    padding: 12,
-  },
-  cardIcon: {
-    marginBottom: 6,
-  },
-  telemetryNumber: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 26,
-    fontWeight: '900',
-    color: colors.primary,
-  },
-  telemetryLabel: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.text,
-    letterSpacing: 0.5,
-    marginTop: 2,
-  },
-  telemetrySubtext: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 9,
-    color: colors.textDim,
-    marginTop: 2,
-  },
-  moduleTouch: {
-    marginBottom: 12,
-  },
-  moduleCard: {
-    padding: 14,
-  },
-  moduleContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  moduleIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    borderWidth: 1,
-    backgroundColor: colors.surfaceElevated,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-  },
-  moduleDetails: {
-    flex: 1,
-    marginRight: 8,
-  },
-  moduleTitle: {
-    fontFamily: typography.fontFamily.mono,
-    fontSize: 13,
-    fontWeight: '800',
-    color: colors.text,
-    letterSpacing: 0.8,
-    marginBottom: 4,
-  },
-  moduleDescription: {
-    fontSize: 11,
-    color: colors.textMuted,
-    lineHeight: 15,
-  },
-  logoutSection: {
-    marginTop: 12,
-    marginBottom: 24,
+  actionBtn: {
+    padding: 4,
   },
 });
-
-export default HomeScreen;

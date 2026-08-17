@@ -12,6 +12,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<boolean>;
+  register: (data: any) => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
   refreshUser: () => Promise<void>;
@@ -110,6 +111,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const registerUser = async (data: any): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await authApi.register(data);
+      setToken(response.access_token);
+      setUser(response.user);
+      await setStoredToken(response.access_token);
+      return true;
+    } catch (err: any) {
+      console.error('Register failed:', err);
+      const msg = err.response?.data?.message || err.message || 'Error en el registro';
+      setError(msg);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const clearError = () => setError(null);
 
   const value = useMemo(
@@ -120,6 +140,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isLoading,
       error,
       login,
+      register: registerUser,
       logout,
       clearError,
       refreshUser,

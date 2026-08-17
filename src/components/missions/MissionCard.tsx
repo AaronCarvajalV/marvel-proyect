@@ -18,12 +18,16 @@ import { formatMissionDate, formatMissionLocation } from '../../utils/formatting
 interface MissionCardProps {
   mission: Mission;
   onPressHero?: (heroId: number) => void;
+  onPressEdit?: (missionId: number) => void;
+  onPressDelete?: (missionId: number, missionTitle: string) => void;
   style?: StyleProp<ViewStyle>;
 }
 
 export const MissionCard: React.FC<MissionCardProps> = ({
   mission,
   onPressHero,
+  onPressEdit,
+  onPressDelete,
   style,
 }) => {
   const [heroImageError, setHeroImageError] = useState(false);
@@ -70,7 +74,29 @@ export const MissionCard: React.FC<MissionCardProps> = ({
 
       {/* Footer: Status Badge and Assigned Hero Operative */}
       <View style={styles.footerRow}>
-        <StatusBadge type="mission_status" value={mission.estado} size="sm" />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <StatusBadge type="mission_status" value={mission.estado} size="sm" />
+          
+          {onPressEdit && (
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => onPressEdit(mission.id)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="create-outline" size={14} color={colors.primary} />
+            </TouchableOpacity>
+          )}
+
+          {onPressDelete && (
+            <TouchableOpacity
+              style={[styles.editButton, { borderColor: colors.danger }]}
+              onPress={() => onPressDelete(mission.id, mission.titulo)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="trash-outline" size={14} color={colors.danger} />
+            </TouchableOpacity>
+          )}
+        </View>
 
         {assignedHero && (
           <TouchableOpacity
@@ -102,12 +128,12 @@ export const MissionCard: React.FC<MissionCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
-    borderRadius: 10,
+    backgroundColor: colors.surfaceGlass,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.border,
-    padding: 14,
-    marginBottom: 12,
+    borderColor: colors.borderCyan,
+    padding: 16,
+    marginBottom: 16,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -227,6 +253,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary,
     letterSpacing: 0.5,
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 4,
+    backgroundColor: colors.primaryGlow,
+  },
+  editButtonText: {
+    fontFamily: typography.fontFamily.mono,
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.primary,
+    marginLeft: 4,
   },
 });
 

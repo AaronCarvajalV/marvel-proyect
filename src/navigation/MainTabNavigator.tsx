@@ -6,7 +6,6 @@ import { MainTabParamList } from './types';
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { HeroesScreen } from '../screens/heroes/HeroesScreen';
 import { MissionsScreen } from '../screens/missions/MissionsScreen';
-import { FavoritesScreen } from '../screens/favorites/FavoritesScreen';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 
@@ -27,7 +26,7 @@ export const MainTabNavigator: React.FC = () => {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: 'INICIO',
+          tabBarLabel: 'HOME',
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons
               name={focused ? 'grid' : 'grid-outline'}
@@ -41,7 +40,7 @@ export const MainTabNavigator: React.FC = () => {
         name="Heroes"
         component={HeroesScreen}
         options={{
-          tabBarLabel: 'HÉROES',
+          tabBarLabel: 'NETWORK',
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons
               name={focused ? 'people' : 'people-outline'}
@@ -55,24 +54,10 @@ export const MainTabNavigator: React.FC = () => {
         name="Missions"
         component={MissionsScreen}
         options={{
-          tabBarLabel: 'MISIONES',
+          tabBarLabel: 'MISSIONS',
           tabBarIcon: ({ focused, color, size }) => (
             <Ionicons
               name={focused ? 'navigate-circle' : 'navigate-circle-outline'}
-              size={size || 22}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Favorites"
-        component={FavoritesScreen}
-        options={{
-          tabBarLabel: 'FAVORITOS',
-          tabBarIcon: ({ focused, color, size }) => (
-            <Ionicons
-              name={focused ? 'star' : 'star-outline'}
               size={size || 22}
               color={color}
             />
@@ -85,18 +70,21 @@ export const MainTabNavigator: React.FC = () => {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceGlass,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.borderCyan,
     paddingTop: 6,
     height: 60,
+    elevation: 0,
+    position: 'absolute', // To allow blur or content behind if needed, matching Web overlay
   },
   tabBarLabel: {
     fontFamily: typography.fontFamily.mono,
     fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 0.8,
+    letterSpacing: 1.5,
     paddingBottom: 6,
+    textTransform: 'uppercase',
   },
 });
 

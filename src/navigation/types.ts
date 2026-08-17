@@ -12,12 +12,16 @@ export type MainTabParamList = {
   Heroes: undefined;
   Missions: undefined;
   Favorites: undefined;
+  HeroForm: { heroId?: number };
+  MissionForm: { missionId?: number };
 };
 
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   HeroDetail: { heroId: number; heroName?: string };
+  HeroForm: { heroId?: number };
+  MissionForm: { missionId?: number };
 };
 
 // Navigation Prop helpers

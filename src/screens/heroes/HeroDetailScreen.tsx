@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Hero } from '../../types';
 import { heroesApi } from '../../api';
 import { useFavorites } from '../../context/FavoritesContext';
+import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { HudCard } from '../../components/common/HudCard';
@@ -27,11 +28,14 @@ import { getPowerColor } from '../../utils/formatting';
 
 export const HeroDetailScreen: React.FC = () => {
   const route = useRoute<HeroDetailRouteProp>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>(); // Cast to any to bypass TS error with nested navigators
   const { heroId } = route.params;
 
   const { isFavorite, toggleFavorite } = useFavorites();
   const favoriteActive = isFavorite(heroId);
+
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'ADMIN';
 
   const [hero, setHero] = useState<Hero | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +49,7 @@ export const HeroDetailScreen: React.FC = () => {
       const data = await heroesApi.getHeroById(heroId);
       setHero(data);
     } catch (err: unknown) {
-      let msg = 'No se pudo cargar el expediente del superhéroe.';
+      let msg = 'Failed to load operative dossier.';
       if (err && typeof err === 'object' && 'message' in err) {
         msg = String((err as { message: string }).message);
       }
@@ -75,12 +79,12 @@ export const HeroDetailScreen: React.FC = () => {
           activeOpacity={0.7}
         >
           <Ionicons name="arrow-back" size={20} color={colors.primary} />
-          <Text style={styles.backText}>VOLVER</Text>
+          <Text style={styles.backText}>BACK</Text>
         </TouchableOpacity>
 
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle} numberOfLines={1}>
-            EXPEDIENTE #{heroId}
+            DOSSIER #{heroId}
           </Text>
         </View>
 
@@ -92,18 +96,18 @@ export const HeroDetailScreen: React.FC = () => {
           <Ionicons
             name={favoriteActive ? 'star' : 'star-outline'}
             size={20}
-            color={favoriteActive ? colors.secondary : colors.textMuted}
+            color={favoriteActive ? colors.primary : colors.textMuted}
           />
         </TouchableOpacity>
       </View>
 
       {isLoading && !refreshing ? (
-        <LoadingOverlay message="DESENCRIPTANDO EXPEDIENTE TÁCTICO..." fullscreen />
+        <LoadingOverlay message="DECRYPTING DOSSIER..." fullscreen />
       ) : error || !hero ? (
         <View style={styles.centerContainer}>
           <ErrorMessage
-            title="FALLA DE ACCESO"
-            message={error || 'No se encontró el superhéroe solicitado.'}
+            title="ACCESS DENIED"
+            message={error || 'Operative not found in database.'}
             onRetry={fetchHeroDetail}
           />
         </View>
@@ -142,7 +146,7 @@ export const HeroDetailScreen: React.FC = () => {
               <View style={styles.heroIdentity}>
                 <Text style={styles.heroCodename}>{hero.nombre.toUpperCase()}</Text>
                 <Text style={styles.heroRealName}>
-                  IDENTIDAD REAL: <Text style={styles.realNameHighlight}>{hero.nombre_real}</Text>
+                  REAL IDENTITY: <Text style={styles.realNameHighlight}>{hero.nombre_real.toUpperCase()}</Text>
                 </Text>
 
                 <View style={styles.statusRow}>
@@ -156,30 +160,40 @@ export const HeroDetailScreen: React.FC = () => {
 
             {/* Favorite Action Button */}
             <HudButton
-              title={favoriteActive ? '★ REMOVER DE FAVORITOS' : '★ MARCAR COMO FAVORITO'}
+              title={favoriteActive ? '★ REMOVE FROM FAVORITES' : '★ ADD TO FAVORITES'}
               onPress={() => toggleFavorite(hero.id)}
               variant={favoriteActive ? 'secondary' : 'outline'}
               size="md"
               style={styles.favoriteButton}
             />
+
+            {isAdmin && (
+              <HudButton
+                title="EDIT OPERATIVE"
+                onPress={() => navigation.navigate('MainTabs', { screen: 'HeroForm', params: { heroId: hero.id } })}
+                variant="primary"
+                size="md"
+                style={{ marginTop: 12, width: '100%' }}
+              />
+            )}
           </HudCard>
 
           {/* Power Level Assessment Section */}
-          <Text style={styles.sectionTitle}>EVALUACIÓN DE PODER Y NIVEL DE AMENAZA</Text>
+          <Text style={styles.sectionTitle}>THREAT & POWER ASSESSMENT</Text>
           <HudCard style={styles.sectionCard}>
             <View style={styles.powerGaugeHeader}>
               <View>
-                <Text style={styles.powerAssessmentLabel}>ESCALA DE ENERGÍA Y COMBATE</Text>
+                <Text style={styles.powerAssessmentLabel}>ENERGY & COMBAT SCALE</Text>
                 <Text style={styles.powerTierLabel}>
-                  CLASIFICACIÓN:{' '}
+                  CLASSIFICATION:{' '}
                   <Text style={{ color: getPowerColor(hero.nivel_poder) }}>
                     {hero.nivel_poder >= 90
-                      ? 'NIVEL OMEGA (CÓSMICO)'
+                      ? 'OMEGA LEVEL (COSMIC)'
                       : hero.nivel_poder >= 75
-                      ? 'NIVEL ALFA (SUPERIOR)'
+                      ? 'ALPHA LEVEL (SUPERIOR)'
                       : hero.nivel_poder >= 50
-                      ? 'NIVEL BETA (ESTÁNDAR)'
-                      : 'NIVEL GAMMA (TACTICAL)'}
+                      ? 'BETA LEVEL (STANDARD)'
+                      : 'GAMMA LEVEL (TACTICAL)'}
                   </Text>
                 </Text>
               </View>
@@ -195,20 +209,20 @@ export const HeroDetailScreen: React.FC = () => {
           </HudCard>
 
           {/* Primary Ability & Tactical Skills */}
-          <Text style={styles.sectionTitle}>HABILIDAD PRINCIPAL & CAPACIDADES</Text>
+          <Text style={styles.sectionTitle}>PRIMARY ABILITY & SKILLS</Text>
           <HudCard style={styles.sectionCard}>
             <View style={styles.abilityRow}>
               <Ionicons name="flash" size={20} color={colors.primary} style={styles.abilityIcon} />
-              <Text style={styles.abilityTitle}>PODER PRINCIPAL REGISTRADO</Text>
+              <Text style={styles.abilityTitle}>REGISTERED PRIMARY ABILITY</Text>
             </View>
-            <Text style={styles.abilityDescription}>{hero.poder_principal}</Text>
+            <Text style={styles.abilityDescription}>{hero.poder_principal.toUpperCase()}</Text>
           </HudCard>
 
           {/* S.H.I.E.L.D. Metadata Footer */}
           <View style={styles.metadataFooter}>
-            <Text style={styles.metadataText}>EXPEDIENTE CLASIFICADO NIVEL 7 // S.H.I.E.L.D.</Text>
+            <Text style={styles.metadataText}>DOSSIER CLASSIFIED LEVEL 7 // S.H.I.E.L.D.</Text>
             <Text style={styles.metadataSubtext}>
-              ÚLTIMA ACTUALIZACIÓN REGISTRADA EN BASE DE DATOS CENTRAL
+              LAST UPDATED IN CENTRAL DATABASE
             </Text>
           </View>
         </ScrollView>
@@ -220,7 +234,7 @@ export const HeroDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.backgroundDark,
   },
   navBar: {
     flexDirection: 'row',
@@ -229,8 +243,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
+    borderBottomColor: colors.borderCyan,
+    backgroundColor: colors.surfaceGlass,
   },
   backButton: {
     flexDirection: 'row',
@@ -244,7 +258,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary,
     marginLeft: 4,
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   headerTitleContainer: {
     flex: 1,
@@ -252,24 +266,24 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontFamily: typography.fontFamily.mono,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
     color: colors.text,
-    letterSpacing: 1.5,
+    letterSpacing: 2,
   },
   favIconButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.surfaceElevated,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderCyan,
     alignItems: 'center',
     justifyContent: 'center',
   },
   favIconButtonActive: {
-    borderColor: colors.borderGold,
-    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryGlow,
   },
   scrollContent: {
     padding: 16,
@@ -291,9 +305,9 @@ const styles = StyleSheet.create({
   portraitFrame: {
     width: 110,
     height: 140,
-    borderRadius: 8,
+    borderRadius: 4,
     overflow: 'hidden',
-    backgroundColor: colors.surfaceElevated,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     borderWidth: 1.5,
     borderColor: colors.primary,
     position: 'relative',
@@ -315,7 +329,11 @@ const styles = StyleSheet.create({
     right: 0,
     top: '35%',
     height: 1,
-    backgroundColor: colors.primaryGlow,
+    backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
   },
   heroIdentity: {
     flex: 1,
@@ -326,14 +344,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '900',
     color: colors.text,
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   heroRealName: {
     fontFamily: typography.fontFamily.mono,
-    fontSize: 11,
+    fontSize: 10,
     color: colors.textMuted,
     marginTop: 4,
     lineHeight: 16,
+    letterSpacing: 1,
   },
   realNameHighlight: {
     color: colors.primary,
@@ -347,12 +366,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   idBadge: {
-    backgroundColor: colors.surfaceVariant,
+    backgroundColor: 'rgba(0, 229, 255, 0.1)',
     paddingHorizontal: 6,
     paddingVertical: 3,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderCyan,
   },
   idBadgeText: {
     fontFamily: typography.fontFamily.mono,
@@ -364,10 +383,10 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontFamily: typography.fontFamily.mono,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: colors.textMuted,
-    letterSpacing: 1.2,
+    letterSpacing: 2,
     marginTop: 12,
     marginBottom: 8,
   },
@@ -385,7 +404,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.mono,
     fontSize: 11,
     color: colors.textMuted,
-    letterSpacing: 0.8,
+    letterSpacing: 1,
   },
   powerTierLabel: {
     fontFamily: typography.fontFamily.mono,
@@ -398,12 +417,12 @@ const styles = StyleSheet.create({
   powerNumberCircle: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    backgroundColor: colors.surfaceElevated,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderCyan,
   },
   powerLargeNumber: {
     fontFamily: typography.fontFamily.mono,
@@ -432,12 +451,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: colors.primary,
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
   abilityDescription: {
-    fontSize: 13,
+    fontFamily: typography.fontFamily.mono,
+    fontSize: 12,
     color: colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 18,
+    letterSpacing: 0.5,
   },
   metadataFooter: {
     marginTop: 16,
@@ -447,7 +468,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.mono,
     fontSize: 10,
     color: colors.textDim,
-    letterSpacing: 0.8,
+    letterSpacing: 1.5,
     textAlign: 'center',
     marginBottom: 2,
   },
@@ -455,7 +476,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.mono,
     fontSize: 8,
     color: colors.textDim,
-    letterSpacing: 0.5,
+    letterSpacing: 1,
     textAlign: 'center',
   },
 });

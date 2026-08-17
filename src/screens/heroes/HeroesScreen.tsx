@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Hero } from '../../types';
 import { heroesApi } from '../../api';
 import { useFavorites } from '../../context/FavoritesContext';
+import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { HeroCard } from '../../components/heroes/HeroCard';
@@ -21,15 +22,18 @@ import { LoadingOverlay } from '../../components/common/LoadingOverlay';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { EmptyState } from '../../components/common/EmptyState';
 import { HeaderHUD } from '../../components/common/HeaderHUD';
+import { HudButton } from '../../components/common/HudButton';
 import { RootStackNavigationProp } from '../../navigation/types';
 
 export const HeroesScreen: React.FC = () => {
   const navigation = useNavigation<RootStackNavigationProp>();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'ADMIN';
 
   const [heroes, setHeroes] = useState<Hero[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVO' | 'INACTIVO'>('ALL');
+  const [segment, setSegment] = useState<'ALL' | 'FAVORITES'>('ALL');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +44,7 @@ export const HeroesScreen: React.FC = () => {
       const data = await heroesApi.getHeroes();
       setHeroes(data);
     } catch (err: unknown) {
-      let msg = 'No se pudo conectar a la base de datos de superhéroes.';
+      let msg = 'Failed to establish tactical link to main database.';
       if (err && typeof err === 'object' && 'message' in err) {
         msg = String((err as { message: string }).message);
       }
@@ -68,12 +72,12 @@ export const HeroesScreen: React.FC = () => {
         hero.nombre_real.toLowerCase().includes(searchQuery.toLowerCase()) ||
         hero.poder_principal.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesStatus =
-        statusFilter === 'ALL' || hero.estado === statusFilter;
+      const matchesSegment =
+        segment === 'ALL' || (segment === 'FAVORITES' && isFavorite(hero.id));
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesSegment;
     });
-  }, [heroes, searchQuery, statusFilter]);
+  }, [heroes, searchQuery, segment, isFavorite]);
 
   const handleHeroPress = (hero: Hero) => {
     navigation.navigate('HeroDetail', { heroId: hero.id, heroName: hero.nombre });
@@ -82,14 +86,14 @@ export const HeroesScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <HeaderHUD
-        title="BASE DE SUPERHÉROES"
-        subtitle={`REGISTROS: ${heroes.length} OPERATIVOS`}
+        title="NETWORK"
+        subtitle={`OPERATIVES: ${filteredHeroes.length}`}
       />
 
       <View style={styles.filterSection}>
         {/* Search Input */}
         <HudInput
-          placeholder="Buscar por nombre, alias o poder..."
+          placeholder="SEARCH IDENTITY, ALIAS, OR POWER..."
           value={searchQuery}
           onChangeText={setSearchQuery}
           leftIcon="search-outline"
@@ -98,10 +102,10 @@ export const HeroesScreen: React.FC = () => {
           containerStyle={styles.searchInput}
         />
 
-        {/* Status Filter Chips */}
+        {/* Segments: ALL / FAVORITES */}
         <View style={styles.filterChipsRow}>
-          {(['ALL', 'ACTIVO', 'INACTIVO'] as const).map((filter) => {
-            const isSelected = statusFilter === filter;
+          {(['ALL', 'FAVORITES'] as const).map((filter) => {
+            const isSelected = segment === filter;
             return (
               <TouchableOpacity
                 key={filter}
@@ -109,7 +113,7 @@ export const HeroesScreen: React.FC = () => {
                   styles.filterChip,
                   isSelected && styles.filterChipActive,
                 ]}
-                onPress={() => setStatusFilter(filter)}
+                onPress={() => setSegment(filter)}
                 activeOpacity={0.7}
               >
                 <Text
@@ -118,21 +122,32 @@ export const HeroesScreen: React.FC = () => {
                     isSelected && styles.filterChipTextActive,
                   ]}
                 >
-                  {filter === 'ALL' ? 'TODOS' : filter}
+                  {filter}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </View>
+
+        {/* Add Operative Button (Admin Only) */}
+        {isAdmin && (
+          <HudButton
+            title="NEW OPERATIVE"
+            onPress={() => navigation.navigate('HeroForm', {})}
+            variant="primary"
+            size="md"
+            style={{ marginTop: 12 }}
+          />
+        )}
       </View>
 
       {/* Main Content Area */}
       {isLoading && !refreshing ? (
-        <LoadingOverlay message="CARGANDO ARCHIVOS DE SUPERHÉROES..." fullscreen />
+        <LoadingOverlay message="DOWNLOADING SECURE DOSSIERS..." fullscreen />
       ) : error ? (
         <View style={styles.centerContainer}>
           <ErrorMessage
-            title="FALLA DE ENLACE TÁCTICO"
+            title="TACTICAL LINK FAILURE"
             message={error}
             onRetry={fetchHeroes}
           />
@@ -160,14 +175,16 @@ export const HeroesScreen: React.FC = () => {
           }
           ListEmptyComponent={
             <EmptyState
-              icon="search-outline"
-              title="SIN COINCIDENCIAS"
+              icon={segment === 'FAVORITES' && !searchQuery ? "star-outline" : "search-outline"}
+              title={segment === 'FAVORITES' && !searchQuery ? "NO FAVORITES" : "NO MATCHES FOUND"}
               message={
                 searchQuery
-                  ? `No se encontraron operativos que coincidan con "${searchQuery}".`
-                  : 'No hay superhéroes registrados en el sistema.'
+                  ? `No operatives found matching "${searchQuery}".`
+                  : segment === 'FAVORITES'
+                  ? 'Star an operative to pin them to your priority network.'
+                  : 'No operatives found in the current database.'
               }
-              actionTitle={searchQuery ? 'LIMPIAR BÚSQUEDA' : 'RECARGAR'}
+              actionTitle={searchQuery ? 'CLEAR SEARCH' : 'RELOAD DATABASE'}
               onAction={searchQuery ? () => setSearchQuery('') : fetchHeroes}
             />
           }
@@ -180,48 +197,49 @@ export const HeroesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.backgroundDark,
   },
   filterSection: {
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 8,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderCyan,
     backgroundColor: colors.backgroundDark,
   },
   searchInput: {
-    marginBottom: 8,
+    marginBottom: 12,
   },
   filterChipsRow: {
     flexDirection: 'row',
     gap: 8,
   },
   filterChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    borderColor: colors.borderCyan,
+    backgroundColor: colors.surfaceGlass,
   },
   filterChipActive: {
     borderColor: colors.primary,
-    backgroundColor: 'rgba(0, 229, 255, 0.15)',
+    backgroundColor: colors.primaryGlow,
   },
   filterChipText: {
     fontFamily: typography.fontFamily.mono,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     color: colors.textMuted,
-    letterSpacing: 0.8,
+    letterSpacing: 1.5,
   },
   filterChipTextActive: {
     color: colors.primary,
   },
   listContent: {
     padding: 16,
-    paddingBottom: 24,
+    paddingBottom: 80, // Added bottom padding for tab bar
   },
   centerContainer: {
     flex: 1,

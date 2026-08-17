@@ -1,61 +1,61 @@
 export const colors = {
-  // Backgrounds (Dark Carbon / Void / Slate)
-  background: '#070b14',
-  backgroundDark: '#04070d',
-  backgroundCard: 'rgba(15, 23, 42, 0.85)',
-  surface: '#0f172a',
-  surfaceElevated: '#1a263d',
-  surfaceVariant: '#1e293b',
-  surfaceGlass: 'rgba(15, 23, 42, 0.75)',
+  // Backgrounds (Matched from Web surface-dim / surfaceCharcoal)
+  background: '#131315',
+  backgroundDark: '#0a0a0c', // From index.css body background
+  backgroundCard: '#121316', // surface-charcoal
+  surface: '#131315',
+  surfaceElevated: '#201f21', // surface-container
+  surfaceVariant: '#353437', // surface-variant
+  surfaceGlass: 'rgba(18, 19, 22, 0.8)', // surface-charcoal with opacity
 
-  // Primary: Stark Arc Reactor Cyan
-  primary: '#00e5ff',
-  primaryGlow: 'rgba(0, 229, 255, 0.35)',
-  primaryMuted: 'rgba(0, 229, 255, 0.15)',
-  primaryDark: '#0097a7',
+  // Primary: Cyan
+  primary: '#a5e7ff',
+  primaryGlow: 'rgba(0, 210, 255, 0.4)', // holographic-glow
+  primaryMuted: 'rgba(0, 210, 255, 0.15)',
+  primaryDark: '#00d2ff', // primary-container
 
-  // Secondary: Stark Gold / Amber Accent
-  secondary: '#ffd700',
-  secondaryGlow: 'rgba(255, 215, 0, 0.35)',
-  secondaryMuted: 'rgba(255, 215, 0, 0.15)',
-  secondaryDark: '#c79a00',
+  // Secondary: Gold / Amber
+  secondary: '#ffcf8f',
+  secondaryGlow: 'rgba(255, 207, 143, 0.35)',
+  secondaryMuted: 'rgba(255, 207, 143, 0.15)',
+  secondaryDark: '#ffb229', // tertiary-container
 
   // Accent / HUD Elements
-  hudCyan: '#00e5ff',
-  hudGold: '#ffd700',
-  hudBlue: '#38bdf8',
-  hudPurple: '#a855f7',
+  hudCyan: '#a5e7ff',
+  hudGold: '#ffcf8f',
+  hudBlue: '#b6ebff', // primary-fixed
+  hudPurple: '#ffd79f', // tertiary
 
   // Threat / Danger Levels
-  dangerHigh: '#ff3366',
-  dangerHighGlow: 'rgba(255, 51, 102, 0.35)',
+  dangerHigh: '#ffb4ab', // error
+  dangerHighGlow: 'rgba(255, 180, 171, 0.35)',
   dangerMedium: '#ffb229',
   dangerMediumGlow: 'rgba(255, 178, 41, 0.35)',
-  dangerLow: '#00e5ff',
-  dangerLowGlow: 'rgba(0, 229, 255, 0.35)',
+  dangerLow: '#a5e7ff',
+  dangerLowGlow: 'rgba(0, 210, 255, 0.35)',
 
   // Status Indicators
-  statusActive: '#00e676',
-  statusActiveGlow: 'rgba(0, 230, 118, 0.35)',
-  statusInactive: '#64748b',
+  statusActive: '#a5e7ff', // Aligning to Web primary
+  statusActiveGlow: 'rgba(0, 210, 255, 0.35)',
+  statusInactive: '#859399', // outline
   statusPending: '#ffb229',
-  statusInProgress: '#00e5ff',
-  statusCompleted: '#00e676',
+  statusInProgress: '#a5e7ff',
+  statusCompleted: '#ffcf8f',
 
   // Typography
-  text: '#f8fafc',
-  textSecondary: '#cbd5e1',
-  textMuted: '#94a3b8',
-  textDim: '#64748b',
-  textInverse: '#070b14',
+  text: '#e5e1e4', // on-surface
+  textSecondary: '#bbc9cf', // on-surface-variant
+  textMuted: '#859399', // outline
+  textDim: '#3c494e', // outline-variant
+  textInverse: '#131315',
 
   // Borders & Dividers
-  border: '#1e293b',
-  borderLight: '#334155',
-  borderCyan: 'rgba(0, 229, 255, 0.3)',
-  borderGold: 'rgba(255, 215, 0, 0.3)',
-  borderDanger: 'rgba(255, 51, 102, 0.4)',
+  border: '#353437', // surface-variant
+  borderLight: '#3c494e', // outline-variant
+  borderCyan: 'rgba(0, 210, 255, 0.2)', // glass-border
+  borderGold: 'rgba(255, 207, 143, 0.3)',
+  borderDanger: 'rgba(255, 180, 171, 0.4)',
 
   // Overlay
-  overlay: 'rgba(4, 7, 13, 0.85)',
+  overlay: 'rgba(19, 19, 21, 0.85)',
 };
