@@ -14,7 +14,7 @@ class MissionController extends Controller
      */
     public function index(): JsonResponse
     {
-        $missions = Mission::with('hero')->get();
+        $missions = Mission::with('hero', 'targetLocation')->get();
 
         return response()->json([
             'success' => true,
@@ -27,7 +27,7 @@ class MissionController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $mission = Mission::with('hero')->find($id);
+        $mission = Mission::with('hero', 'targetLocation')->find($id);
 
         if (! $mission) {
             return response()->json([
@@ -50,17 +50,18 @@ class MissionController extends Controller
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
             'descripcion' => 'required|string',
-            'ubicacion' => 'required|string|max:255',
+            'target_location_id' => 'required|integer|exists:target_locations,id',
             'fecha' => 'required|date|date_format:Y-m-d',
             'nivel_peligro' => 'required|in:BAJO,MEDIO,ALTO',
             'estado' => 'required|in:PENDIENTE,EN_PROGRESO,COMPLETADA',
             'superheroe_id' => 'required|integer|exists:heroes,id',
         ], [
             'superheroe_id.exists' => 'El superhéroe seleccionado no es válido o no existe.',
+            'target_location_id.exists' => 'La ubicación seleccionada no es válida o no existe.',
         ]);
 
         $mission = Mission::create($validated);
-        $mission->load('hero');
+        $mission->load('hero', 'targetLocation');
 
         return response()->json([
             'success' => true,
@@ -86,13 +87,14 @@ class MissionController extends Controller
         $validated = $request->validate([
             'titulo' => 'sometimes|required|string|max:255',
             'descripcion' => 'sometimes|required|string',
-            'ubicacion' => 'sometimes|required|string|max:255',
+            'target_location_id' => 'sometimes|required|integer|exists:target_locations,id',
             'fecha' => 'sometimes|required|date|date_format:Y-m-d',
             'nivel_peligro' => 'sometimes|required|in:BAJO,MEDIO,ALTO',
             'estado' => 'sometimes|required|in:PENDIENTE,EN_PROGRESO,COMPLETADA',
             'superheroe_id' => 'sometimes|required|integer|exists:heroes,id',
         ], [
             'superheroe_id.exists' => 'El superhéroe seleccionado no es válido o no existe.',
+            'target_location_id.exists' => 'La ubicación seleccionada no es válida o no existe.',
         ]);
 
         $mission->update($validated);
@@ -100,7 +102,7 @@ class MissionController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Misión actualizada exitosamente.',
-            'data' => $mission->fresh('hero'),
+            'data' => $mission->fresh('hero', 'targetLocation'),
         ], Response::HTTP_OK);
     }
 
