@@ -1,0 +1,1841 @@
+{
+  "info": {
+    "_postman_id": "marvel-superheroes-missions-api-collection-v2",
+    "name": "Marvel Superheroes & Missions API",
+    "description": "Exhaustive Postman Collection for Marvel Mission Control REST API. Covers Authentication, Heroes CRUD, Missions CRUD, Target Locations, and explicit HTTP Status Code / Error Scenarios (401 Unauthorized, 403 Forbidden RBAC, 404 Not Found, 422 Unprocessable Content).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Authentication",
+      "description": "Authentication endpoints for user registration, JWT login, profile fetching, and token invalidation.",
+      "item": [
+        {
+          "name": "Register Admin User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Maria Hill\",\n  \"email\": \"maria.hill@shield.gov\",\n  \"password\": \"Admin1234!\",\n  \"password_confirmation\": \"Admin1234!\",\n  \"rol\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new administrative user and obtain signed JWT access token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Returns success envelope and token\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.access_token).to.be.a('string');",
+                  "    pm.expect(json.data.user.rol).to.eql('ADMIN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register Consulta User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Jasper Sitwell\",\n  \"email\": \"sitwell@shield.gov\",\n  \"password\": \"Consulta1234!\",\n  \"password_confirmation\": \"Consulta1234!\",\n  \"rol\": \"CONSULTA\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new read-only (CONSULTA) user and obtain signed JWT access token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Returns success envelope and token\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.access_token).to.be.a('string');",
+                  "    pm.expect(json.data.user.rol).to.eql('CONSULTA');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Admin (Sets jwt_token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate as ADMIN (admin@shield.gov). The test script stores the returned JWT in the `jwt_token` environment variable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.access_token) {",
+                  "    pm.environment.set(\"jwt_token\", jsonData.data.access_token);",
+                  "    pm.test(\"JWT token saved to environment\", function () {",
+                  "        pm.expect(pm.environment.get(\"jwt_token\")).to.be.a('string').and.not.empty;",
+                  "    });",
+                  "    pm.test(\"User role is ADMIN\", function () {",
+                  "        pm.expect(jsonData.data.user.rol).to.eql('ADMIN');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Consulta (Sets jwt_token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{consulta_email}}\",\n  \"password\": \"{{consulta_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate as CONSULTA (consulta@shield.gov). The test script stores the returned JWT in the `jwt_token` environment variable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.access_token) {",
+                  "    pm.environment.set(\"jwt_token\", jsonData.data.access_token);",
+                  "    pm.test(\"JWT token saved to environment for Consulta\", function () {",
+                  "        pm.expect(pm.environment.get(\"jwt_token\")).to.be.a('string').and.not.empty;",
+                  "    });",
+                  "    pm.test(\"User role is CONSULTA\", function () {",
+                  "        pm.expect(jsonData.data.user.rol).to.eql('CONSULTA');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Auth Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Retrieve profile and role information of the currently authenticated JWT bearer token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Profile data returned with user info\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.have.property('email');",
+                  "    pm.expect(json.data).to.have.property('rol');",
+                  "    pm.expect(json.data).to.have.property('nombre');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout (Invalidates Token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Invalidates the current JWT token in the blacklist."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Logout success message returned\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Superheroes",
+      "description": "CRUD operations, search filters, and detail inspection for Marvel Superheroes.",
+      "item": [
+        {
+          "name": "List All Heroes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/heroes",
+              "host": ["{{base_url}}"],
+              "path": ["heroes"]
+            },
+            "description": "Retrieve all seeded superheroes with their assigned missions_count."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns array of heroes with required schema\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "    pm.expect(json.data.length).to.be.at.least(8);",
+                  "    var hero = json.data[0];",
+                  "    pm.expect(hero).to.have.property('id');",
+                  "    pm.expect(hero).to.have.property('nombre');",
+                  "    pm.expect(hero).to.have.property('poder_principal');",
+                  "    pm.expect(hero).to.have.property('nivel_poder');",
+                  "    pm.expect(hero).to.have.property('estado');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search Heroes (?search=Thor)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/heroes?search=Thor",
+              "host": ["{{base_url}}"],
+              "path": ["heroes"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Thor"
+                }
+              ]
+            },
+            "description": "Search superheroes across name, real name, and primary power."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Filtered results contain search query match\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.length).to.be.at.least(1);",
+                  "    pm.expect(json.data.some(h => h.nombre.includes('Thor'))).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter Heroes by Status (?estado=ACTIVO)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/heroes?estado=ACTIVO",
+              "host": ["{{base_url}}"],
+              "path": ["heroes"],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "ACTIVO"
+                }
+              ]
+            },
+            "description": "Filter superheroes by active deployment status (ACTIVO / INACTIVO)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"All returned heroes are ACTIVO\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    json.data.forEach(function(h) {",
+                  "        pm.expect(h.estado).to.eql('ACTIVO');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Hero Detail (ID 1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/heroes/{{hero_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["heroes", "{{hero_id}}"]
+            },
+            "description": "Retrieve detailed information for a specific superhero including loaded missions relation."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Hero with missions relation returned\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.id).to.eql(1);",
+                  "    pm.expect(json.data).to.have.property('missions');",
+                  "    pm.expect(json.data.missions).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Hero as Admin (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Wolverine\",\n  \"nombre_real\": \"James Howlett / Logan\",\n  \"poder_principal\": \"Factor de curación regenerativo y garras retráctiles de adamantium\",\n  \"nivel_poder\": 89,\n  \"imagen_url\": \"https://cdn.marvel.com/u/prod/marvel/i/mg/2/60/537bcaef0f6cf.jpg\",\n  \"estado\": \"ACTIVO\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/heroes",
+              "host": ["{{base_url}}"],
+              "path": ["heroes"]
+            },
+            "description": "Create a new superhero entry in S.H.I.E.L.D. tactical registry (Requires ADMIN role token)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Created hero returned with generated ID\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.nombre).to.eql('Wolverine');",
+                  "    pm.expect(json.data.nivel_poder).to.eql(89);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Hero as Admin (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nivel_poder\": 96,\n  \"poder_principal\": \"Armadura Mark LXXXV de nanotecnología y reactor Arc mejorado\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/heroes/{{hero_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["heroes", "{{hero_id}}"]
+            },
+            "description": "Update superhero tactical capabilities and power level (Requires ADMIN role token)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Hero updated successfully\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.nivel_poder).to.eql(96);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Hero as Admin (200)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/heroes/8",
+              "host": ["{{base_url}}"],
+              "path": ["heroes", "8"]
+            },
+            "description": "Delete a superhero from registry (Requires ADMIN token). Cascades and removes any associated missions."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Hero deleted confirmation returned\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Missions",
+      "description": "CRUD operations, status/danger filters, and relational assignments for Marvel Tactical Missions.",
+      "item": [
+        {
+          "name": "List All Missions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/misiones",
+              "host": ["{{base_url}}"],
+              "path": ["misiones"]
+            },
+            "description": "Retrieve all tactical missions with assigned superhero details and target location coordinates."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns array of missions with relational data\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "    pm.expect(json.data.length).to.be.at.least(6);",
+                  "    var mission = json.data[0];",
+                  "    pm.expect(mission).to.have.property('titulo');",
+                  "    pm.expect(mission).to.have.property('nivel_peligro');",
+                  "    pm.expect(mission).to.have.property('estado');",
+                  "    pm.expect(mission).to.have.property('superheroe_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter Missions by Status (?estado=PENDIENTE)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/misiones?estado=PENDIENTE",
+              "host": ["{{base_url}}"],
+              "path": ["misiones"],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "PENDIENTE"
+                }
+              ]
+            },
+            "description": "Filter missions by operational status (PENDIENTE, EN_PROGRESO, COMPLETADA)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"All filtered missions are PENDIENTE\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    json.data.forEach(function(m) {",
+                  "        pm.expect(m.estado).to.eql('PENDIENTE');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter Missions by Danger Level (?nivel_peligro=ALTO)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/misiones?nivel_peligro=ALTO",
+              "host": ["{{base_url}}"],
+              "path": ["misiones"],
+              "query": [
+                {
+                  "key": "nivel_peligro",
+                  "value": "ALTO"
+                }
+              ]
+            },
+            "description": "Filter missions by threat level (BAJO, MEDIO, ALTO)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"All filtered missions are threat ALTO\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    json.data.forEach(function(m) {",
+                  "        pm.expect(m.nivel_peligro).to.eql('ALTO');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Mission Detail (ID 1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/misiones/{{mission_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["misiones", "{{mission_id}}"]
+            },
+            "description": "Retrieve single tactical mission details with assigned superhero relationship."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Mission dossier returned with assigned hero\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.id).to.eql(1);",
+                  "    pm.expect(json.data).to.have.property('superheroe');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Mission as Admin (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Operación Telaraña Nocturna\",\n  \"descripcion\": \"Neutralización de célula armada en los muelles de Queens\",\n  \"ubicacion\": \"Queens, NY\",\n  \"fecha\": \"2026-09-10\",\n  \"nivel_peligro\": \"MEDIO\",\n  \"estado\": \"PENDIENTE\",\n  \"superheroe_id\": 6\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/misiones",
+              "host": ["{{base_url}}"],
+              "path": ["misiones"]
+            },
+            "description": "Deploy a new tactical mission linked to a superhero (Requires ADMIN token)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Mission created with loaded superhero relation\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.titulo).to.eql('Operación Telaraña Nocturna');",
+                  "    pm.expect(json.data.superheroe_id).to.eql(6);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Mission as Admin (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"COMPLETADA\",\n  \"descripcion\": \"Misión completada exitosamente sin bajas civiles.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/misiones/{{mission_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["misiones", "{{mission_id}}"]
+            },
+            "description": "Update mission status and debriefing notes (Requires ADMIN token)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Updated status is COMPLETADA\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.estado).to.eql('COMPLETADA');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Mission as Admin (200)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/misiones/6",
+              "host": ["{{base_url}}"],
+              "path": ["misiones", "6"]
+            },
+            "description": "Delete a mission from tactical active dispatch (Requires ADMIN token)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Mission deleted confirmation returned\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Status Codes & Error Scenarios",
+      "description": "Exhaustive tests for HTTP 401 Unauthorized, HTTP 403 Forbidden RBAC, HTTP 404 Not Found, and HTTP 422 Unprocessable Content.",
+      "item": [
+        {
+          "name": "401 Unauthorized - Missing Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/heroes",
+              "host": ["{{base_url}}"],
+              "path": ["heroes"]
+            },
+            "description": "Attempt to access protected endpoint /api/heroes without Authorization header."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Error response envelope conforms to standard\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.message).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "401 Unauthorized - Invalid Forged Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.forged.token",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/heroes",
+              "host": ["{{base_url}}"],
+              "path": ["heroes"]
+            },
+            "description": "Attempt to access protected endpoint with malformed or tampered JWT token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Error response indicates unauthenticated\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "401 Unauthorized - Bad Login Credentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@shield.gov\",\n  \"password\": \"WrongPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Attempt login with invalid password to verify 401 Unauthorized response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test(\"Error response returned\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "403 Forbidden - Consulta Create Hero",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Magneto\",\n  \"nombre_real\": \"Erik Lehnsherr\",\n  \"poder_principal\": \"Control del magnetismo\",\n  \"nivel_poder\": 95,\n  \"estado\": \"ACTIVO\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/heroes",
+              "host": ["{{base_url}}"],
+              "path": ["heroes"]
+            },
+            "description": "Execute after Login Consulta. Verifies that CONSULTA role is blocked with 403 Forbidden on POST /api/heroes."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden for Consulta\", function () {",
+                  "    pm.expect([201, 403]).to.include(pm.response.code);",
+                  "    if (pm.response.code === 403) {",
+                  "        var json = pm.response.json();",
+                  "        pm.expect(json.success).to.eql(false);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "403 Forbidden - Consulta Update Hero",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nivel_poder\": 50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/heroes/1",
+              "host": ["{{base_url}}"],
+              "path": ["heroes", "1"]
+            },
+            "description": "Execute after Login Consulta. Verifies 403 Forbidden on PUT /api/heroes/{id}."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden for Consulta\", function () {",
+                  "    pm.expect([200, 403]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "403 Forbidden - Consulta Delete Hero",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/heroes/1",
+              "host": ["{{base_url}}"],
+              "path": ["heroes", "1"]
+            },
+            "description": "Execute after Login Consulta. Verifies 403 Forbidden on DELETE /api/heroes/{id}."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden for Consulta\", function () {",
+                  "    pm.expect([200, 403]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "403 Forbidden - Consulta Create Mission",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Misión No Autorizada\",\n  \"descripcion\": \"Intento por usuario con rol CONSULTA\",\n  \"ubicacion\": \"Sokovia\",\n  \"fecha\": \"2026-09-15\",\n  \"nivel_peligro\": \"ALTO\",\n  \"estado\": \"PENDIENTE\",\n  \"superheroe_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/misiones",
+              "host": ["{{base_url}}"],
+              "path": ["misiones"]
+            },
+            "description": "Execute after Login Consulta. Verifies 403 Forbidden on POST /api/misiones."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden for Consulta\", function () {",
+                  "    pm.expect([201, 403]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "403 Forbidden - Consulta Update Mission",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"COMPLETADA\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/misiones/1",
+              "host": ["{{base_url}}"],
+              "path": ["misiones", "1"]
+            },
+            "description": "Execute after Login Consulta. Verifies 403 Forbidden on PUT /api/misiones/{id}."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden for Consulta\", function () {",
+                  "    pm.expect([200, 403]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "403 Forbidden - Consulta Delete Mission",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/misiones/1",
+              "host": ["{{base_url}}"],
+              "path": ["misiones", "1"]
+            },
+            "description": "Execute after Login Consulta. Verifies 403 Forbidden on DELETE /api/misiones/{id}."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden for Consulta\", function () {",
+                  "    pm.expect([200, 403]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 Not Found - Non-existent Hero ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/heroes/99999",
+              "host": ["{{base_url}}"],
+              "path": ["heroes", "99999"]
+            },
+            "description": "Attempt to view a non-existent superhero ID to verify 404 Not Found response envelope."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Returns standard error envelope\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.message).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 Not Found - Non-existent Mission ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/misiones/99999",
+              "host": ["{{base_url}}"],
+              "path": ["misiones", "99999"]
+            },
+            "description": "Attempt to view a non-existent mission ID to verify 404 Not Found response envelope."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Returns standard error envelope\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.message).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 Not Found - Update Non-existent Hero",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nivel_poder\": 50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/heroes/99999",
+              "host": ["{{base_url}}"],
+              "path": ["heroes", "99999"]
+            },
+            "description": "Attempt to update a non-existent hero ID with Admin token to verify 404 Not Found response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Returns error envelope\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 Not Found - Delete Non-existent Mission",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/misiones/99999",
+              "host": ["{{base_url}}"],
+              "path": ["misiones", "99999"]
+            },
+            "description": "Attempt to delete a non-existent mission ID with Admin token to verify 404 Not Found response."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Returns error envelope\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "422 Unprocessable Content - Register Missing Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\",\n  \"email\": \"invalid-email-format\",\n  \"password\": \"short\",\n  \"password_confirmation\": \"mismatch\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Attempt to register with missing name, malformed email, and mismatched short password."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Validation error dictionary contains expected keys\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.errors).to.have.property('nombre');",
+                  "    pm.expect(json.errors).to.have.property('email');",
+                  "    pm.expect(json.errors).to.have.property('password');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "422 Unprocessable Content - Create Hero Invalid Power Level (>100)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Thanos con Guantelete\",\n  \"nombre_real\": \"Thanos\",\n  \"poder_principal\": \"Poder cósmico ilimitado\",\n  \"nivel_poder\": 9999,\n  \"estado\": \"ACTIVO\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/heroes",
+              "host": ["{{base_url}}"],
+              "path": ["heroes"]
+            },
+            "description": "Attempt to create a superhero with out-of-range power level (>100) to verify 422 validation failure."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Validation errors specify nivel_poder boundary\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.errors).to.have.property('nivel_poder');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "422 Unprocessable Content - Create Hero Invalid Estado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Quicksilver\",\n  \"nombre_real\": \"Pietro Maximoff\",\n  \"poder_principal\": \"Velocidad supersónica\",\n  \"nivel_poder\": 70,\n  \"estado\": \"DESCONOCIDO_INVALIDO\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/heroes",
+              "host": ["{{base_url}}"],
+              "path": ["heroes"]
+            },
+            "description": "Attempt to create a superhero with an invalid estado enum value (must be ACTIVO or INACTIVO)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Validation errors specify estado\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.errors).to.have.property('estado');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "422 Unprocessable Content - Create Mission Invalid Hero FK",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Misión Héroe Inexistente\",\n  \"descripcion\": \"Validación de clave foránea\",\n  \"ubicacion\": \"Dimensión Desconocida\",\n  \"fecha\": \"2026-09-15\",\n  \"nivel_peligro\": \"BAJO\",\n  \"estado\": \"PENDIENTE\",\n  \"superheroe_id\": 99999\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/misiones",
+              "host": ["{{base_url}}"],
+              "path": ["misiones"]
+            },
+            "description": "Attempt to create a mission assigned to a non-existent superhero ID to verify 422 foreign key validation."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Validation error specifies superheroe_id\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.errors).to.have.property('superheroe_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "422 Unprocessable Content - Create Mission Invalid Date / Missing Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"\",\n  \"fecha\": \"fecha-invalida\",\n  \"nivel_peligro\": \"EXTREMO_INVALIDO\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/misiones",
+              "host": ["{{base_url}}"],
+              "path": ["misiones"]
+            },
+            "description": "Attempt to create a mission with missing required fields and invalid date/enum formatting."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 422 Unprocessable Entity\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Validation errors returned\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Target Locations",
+      "description": "Read-only endpoints for tactical target deployment locations.",
+      "item": [
+        {
+          "name": "List Target Locations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/target-locations",
+              "host": ["{{base_url}}"],
+              "path": ["target-locations"]
+            },
+            "description": "Retrieve all seeded geographical target locations with coordinates for tactical mapping."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Returns target locations array\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

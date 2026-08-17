@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>A.I.D.A.S. COMMAND - REGISTER_OPERATIVE</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed": "#b6ebff",
+                      "on-tertiary-container": "#6c4700",
+                      "error-container": "#93000a",
+                      "inverse-surface": "#e5e1e4",
+                      "surface-dim": "#131315",
+                      "on-tertiary-fixed-variant": "#624000",
+                      "surface-container-high": "#2a2a2c",
+                      "secondary": "#ffcf8f",
+                      "surface-charcoal": "#121316",
+                      "surface-bright": "#39393b",
+                      "surface-container-low": "#1c1b1d",
+                      "on-primary-container": "#00566a",
+                      "outline": "#859399",
+                      "on-surface": "#e5e1e4",
+                      "tertiary": "#ffd79f",
+                      "on-secondary": "#452b00",
+                      "on-primary-fixed": "#001f28",
+                      "grid-line": "rgba(255, 255, 255, 0.03)",
+                      "surface-tint": "#47d6ff",
+                      "on-error": "#690005",
+                      "inverse-primary": "#00677f",
+                      "technical-gray": "#2a2d33",
+                      "on-secondary-container": "#684300",
+                      "tertiary-container": "#ffb229",
+                      "glass-border": "rgba(0, 210, 255, 0.2)",
+                      "surface-container-highest": "#353437",
+                      "on-secondary-fixed-variant": "#624000",
+                      "primary": "#a5e7ff",
+                      "error": "#ffb4ab",
+                      "secondary-container": "#feaa00",
+                      "tertiary-fixed-dim": "#ffba4a",
+                      "on-secondary-fixed": "#291800",
+                      "on-tertiary-fixed": "#291800",
+                      "tertiary-fixed": "#ffddb1",
+                      "secondary-fixed": "#ffddb3",
+                      "surface": "#131315",
+                      "on-error-container": "#ffdad6",
+                      "surface-container": "#201f21",
+                      "outline-variant": "#3c494e",
+                      "on-primary": "#003543",
+                      "on-surface-variant": "#bbc9cf",
+                      "background": "#131315",
+                      "primary-container": "#00d2ff",
+                      "inverse-on-surface": "#313032",
+                      "primary-fixed-dim": "#47d6ff",
+                      "on-tertiary": "#442b00",
+                      "on-background": "#e5e1e4",
+                      "on-primary-fixed-variant": "#004e60",
+                      "surface-container-lowest": "#0e0e10",
+                      "surface-variant": "#353437",
+                      "secondary-fixed-dim": "#ffb950"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "container-max": "1440px",
+                      "gutter": "16px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "32px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "JetBrains Mono"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "metadata": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "data-mono": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "metadata": [
+                              "10px",
+                              {
+                                      "lineHeight": "12px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        /* Precision Grid Background */
+        body {
+            background-color: #0a0a0c;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+            background-position: -1px -1px;
+            color: #e5e1e4;
+        }
+
+        /* Input field focus styles */
+        .tech-input:focus {
+            outline: none;
+            border-color: #a5e7ff;
+            box-shadow: 0 0 4px rgba(0, 210, 255, 0.4);
+        }
+
+        .tech-input:focus + label,
+        .tech-input:focus ~ .input-glow {
+            color: #a5e7ff;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #131315;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2d33;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a5e7ff;
+        }
+
+        /* Drag and Drop Hover */
+        .drag-active {
+            border-color: #a5e7ff !important;
+            background-color: rgba(0, 210, 255, 0.1) !important;
+        }
+      </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-lg overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface-charcoal/80 backdrop-blur-xl docked full-width top-0 border-b border-glass-border shadow-[0_1px_12px_rgba(0,210,255,0.1)] flex justify-between items-center w-full px-margin-desktop h-16 hidden md:flex sticky z-50">
+<div class="flex items-center gap-8">
+<div class="font-label-caps text-label-caps font-black text-primary drop-shadow-[0_0_8px_rgba(0,210,255,0.6)]">
+                A.I.D.A.S. COMMAND
+            </div>
+<nav class="flex gap-6">
+<a class="text-on-surface-variant font-label-caps hover:text-primary-fixed-dim transition-colors duration-300 cursor-pointer active:opacity-70 flex-col py-5" href="#">GLOBAL SECTOR</a>
+<a class="text-on-surface-variant font-label-caps hover:text-primary-fixed-dim transition-colors duration-300 cursor-pointer active:opacity-70 flex-col py-5" href="#">INTEL</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-label-caps hover:text-primary-fixed-dim transition-colors duration-300 cursor-pointer active:opacity-70 flex-col py-5" href="#">SQUAD</a>
+<a class="text-on-surface-variant font-label-caps hover:text-primary-fixed-dim transition-colors duration-300 cursor-pointer active:opacity-70 flex-col py-5" href="#">LOGISTICS</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative w-64 hidden lg:block">
+<input class="w-full bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-3 py-1.5 focus:border-primary focus:outline-none focus:shadow-[0_0_4px_rgba(0,210,255,0.4)] transition-all" placeholder="QUERY_DATABASE..." type="text"/>
+<span class="material-symbols-outlined absolute right-2 top-1.5 text-on-surface-variant text-[18px]">search</span>
+</div>
+<div class="flex gap-3">
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-70"><span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-70"><span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-70"><span class="material-symbols-outlined" data-icon="emergency_home">emergency_home</span></button>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Desktop & Tablet) -->
+<aside class="bg-surface-charcoal/90 backdrop-blur-md docked left-0 h-full w-64 border-r border-glass-border flat no shadows fixed left-0 top-0 h-screen flex flex-col z-40 hidden md:flex">
+<!-- Logo Area Mobile -->
+<div class="h-16 flex items-center px-4 border-b border-glass-border md:hidden">
+<div class="font-label-caps text-label-caps text-primary">A.I.D.A.S. COMMAND</div>
+</div>
+<!-- Profile / Header -->
+<div class="p-6 border-b border-glass-border">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full border border-primary overflow-hidden relative bg-surface-container-highest">
+<!-- <img src="placeholder" data-alt="A highly detailed close-up portrait of a tactical operator wearing a high-tech helmet with a glowing visor in a dimly lit, futuristic command center. The lighting is cinematic, highlighting the metallic textures and electric cyan accents against deep black backgrounds. The mood is intense and professional." class="object-cover w-full h-full"> -->
+<span class="material-symbols-outlined absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-primary" data-icon="person">person</span>
+</div>
+<div>
+<div class="font-data-mono text-data-mono text-primary uppercase">OPERATOR_01</div>
+<div class="font-metadata text-metadata text-on-surface-variant tracking-widest">SYSTEM ACTIVE</div>
+</div>
+</div>
+<button class="w-full bg-transparent border border-primary text-primary font-label-caps text-label-caps py-2 hover:bg-primary/10 transition-colors uppercase group cursor-pointer">INITIATE_PROTOCOL</button>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex-1 overflow-y-auto py-4 flex flex-col gap-1">
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 font-data-mono text-data-mono uppercase hover:bg-surface-container-high hover:text-primary transition-all duration-200 group cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="grid_view">grid_view</span> DASHBOARD
+            </a>
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 font-data-mono text-data-mono uppercase hover:bg-surface-container-high hover:text-primary transition-all duration-200 group cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="explore">explore</span> LIVE_MAP
+            </a>
+<a class="bg-primary/10 text-primary border-r-2 border-primary flex items-center gap-3 px-4 py-3 font-data-mono text-data-mono uppercase hover:bg-surface-container-high hover:text-primary transition-all duration-200 group cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="monitor_heart">monitor_heart</span> BIO_SYNC
+            </a>
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 font-data-mono text-data-mono uppercase hover:bg-surface-container-high hover:text-primary transition-all duration-200 group cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="shield">shield</span> ARSENAL
+            </a>
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 font-data-mono text-data-mono uppercase hover:bg-surface-container-high hover:text-primary transition-all duration-200 group cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="hub">hub</span> COMMS
+            </a>
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-3 font-data-mono text-data-mono uppercase hover:bg-surface-container-high hover:text-primary transition-all duration-200 group cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="inventory_2">inventory_2</span> ARCHIVE
+            </a>
+</nav>
+<!-- Footer -->
+<div class="p-4 border-t border-glass-border flex flex-col gap-1">
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-2 font-data-mono text-data-mono uppercase hover:bg-surface-container-high hover:text-primary transition-all duration-200 group cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="restart_alt">restart_alt</span> REBOOT
+            </a>
+<a class="text-on-surface-variant flex items-center gap-3 px-4 py-2 font-data-mono text-data-mono uppercase hover:bg-surface-container-high hover:text-error transition-all duration-200 group cursor-pointer" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="power_settings_new">power_settings_new</span> LOGOUT
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 pt-6 md:pt-24 pb-24 md:pb-12 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full relative z-10">
+<!-- Header -->
+<div class="mb-8 border-b border-glass-border pb-4 relative">
+<!-- decorative scanline -->
+<div class="absolute bottom-0 left-0 h-[1px] w-1/3 bg-primary/50" style="box-shadow: 0 0 8px rgba(0, 210, 255, 0.8);"></div>
+<h1 class="font-display-lg text-display-lg md:text-display-lg text-on-surface mb-2 tracking-tight">REGISTER_OPERATIVE</h1>
+<div class="flex items-center gap-4 text-on-surface-variant font-data-mono text-data-mono">
+<span class="flex items-center gap-1 text-primary"><span class="material-symbols-outlined text-[16px]">fingerprint</span> SECURE_UPLINK</span>
+<span>//</span>
+<span>PERSONNEL DOSSIER INITIALIZATION</span>
+</div>
+</div>
+<form class="grid grid-cols-1 lg:grid-cols-12 gap-gutter md:gap-6">
+<!-- Left Column: Identity & Metadata (8 cols) -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- Section 1: Basic Identity -->
+<div class="bg-surface-charcoal/80 border border-technical-gray p-6 relative">
+<!-- Top left corner deco -->
+<div class="absolute top-0 left-0 w-2 h-2 border-t border-l border-primary"></div>
+<!-- Header -->
+<div class="flex items-center gap-2 mb-6 border-b border-technical-gray pb-2">
+<span class="material-symbols-outlined text-primary text-[20px]">badge</span>
+<h2 class="font-data-mono text-data-mono text-primary uppercase tracking-widest">IDENTITY_PARAMETERS</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Input Group -->
+<div class="relative flex flex-col group">
+<label class="font-metadata text-metadata text-on-surface-variant uppercase mb-1 group-focus-within:text-primary transition-colors">DESIGNATION (CALLSIGN)</label>
+<input class="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full transition-all" placeholder="E.G. SPECTER_09" required="" type="text"/>
+</div>
+<div class="relative flex flex-col group">
+<label class="font-metadata text-metadata text-on-surface-variant uppercase mb-1 group-focus-within:text-primary transition-colors">LEGAL IDENTIFIER (REAL NAME)</label>
+<input class="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full transition-all" placeholder="REDACTED_BY_DEFAULT" type="text"/>
+</div>
+<div class="relative flex flex-col group md:col-span-2">
+<label class="font-metadata text-metadata text-on-surface-variant uppercase mb-1 group-focus-within:text-primary transition-colors">CLEARANCE LEVEL</label>
+<select class="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full appearance-none transition-all cursor-pointer">
+<option value="1">LEVEL 1 - STANDARD INFILTRATION</option>
+<option value="2">LEVEL 2 - TACTICAL COMMAND</option>
+<option value="3">LEVEL 3 - STRATEGIC OVERSIGHT</option>
+<option value="4">LEVEL 4 - OMNI_ACCESS (RESTRICTED)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-7 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+</div>
+<!-- Section 2: Power Metrics & Sliders -->
+<div class="bg-surface-charcoal/80 border border-technical-gray p-6 relative">
+<div class="absolute top-0 right-0 w-2 h-2 border-t border-r border-primary"></div>
+<div class="flex items-center gap-2 mb-6 border-b border-technical-gray pb-2">
+<span class="material-symbols-outlined text-primary text-[20px]">tune</span>
+<h2 class="font-data-mono text-data-mono text-primary uppercase tracking-widest">METRIC_CALIBRATION</h2>
+</div>
+<div class="flex flex-col gap-6">
+<!-- Slider 1 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between font-metadata text-metadata uppercase">
+<span class="text-on-surface-variant">COMBAT_PROBABILITY</span>
+<span class="text-primary" id="val-combat">85%</span>
+</div>
+<input class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer outline-none slider-tech" max="100" min="0" oninput="document.getElementById('val-combat').innerText = this.value + '%'" type="range" value="85"/>
+</div>
+<!-- Slider 2 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between font-metadata text-metadata uppercase">
+<span class="text-on-surface-variant">STEALTH_QUOTIENT</span>
+<span class="text-primary" id="val-stealth">60%</span>
+</div>
+<input class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer outline-none slider-tech" max="100" min="0" oninput="document.getElementById('val-stealth').innerText = this.value + '%'" type="range" value="60"/>
+</div>
+<!-- Slider 3 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between font-metadata text-metadata uppercase">
+<span class="text-on-surface-variant">TECH_APTITUDE</span>
+<span class="text-primary" id="val-tech">92%</span>
+</div>
+<input class="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer outline-none slider-tech" max="100" min="0" oninput="document.getElementById('val-tech').innerText = this.value + '%'" type="range" value="92"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Bio Scan & Submission (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Section 3: BIO SCAN UPLOAD -->
+<div class="bg-surface-charcoal/80 border border-technical-gray p-6 flex flex-col flex-1 relative">
+<div class="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-primary"></div>
+<div class="flex items-center gap-2 mb-4 border-b border-technical-gray pb-2">
+<span class="material-symbols-outlined text-primary text-[20px]">scanner</span>
+<h2 class="font-data-mono text-data-mono text-primary uppercase tracking-widest">BIO_SCAN_IMAGE</h2>
+</div>
+<!-- Drag and Drop Area -->
+<div class="flex-1 border-2 border-dashed border-technical-gray bg-[#0a0a0c] flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:border-primary transition-colors group relative overflow-hidden" id="drop-zone">
+<!-- Grid overlay pattern -->
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: linear-gradient(#a5e7ff 1px, transparent 1px), linear-gradient(90deg, #a5e7ff 1px, transparent 1px); background-size: 20px 20px;"></div>
+<span class="material-symbols-outlined text-display-lg text-on-surface-variant mb-4 group-hover:text-primary transition-colors relative z-10" data-weight="fill">upload_file</span>
+<p class="font-data-mono text-data-mono text-on-surface mb-2 relative z-10">INITIALIZE UPLOAD SEQUENCE</p>
+<p class="font-metadata text-metadata text-on-surface-variant relative z-10">DRAG &amp; DROP OR CLICK TO BROWSE</p>
+<p class="font-metadata text-metadata text-primary mt-4 relative z-10 opacity-70">SUPPORTED_FORMATS: .JPG, .PNG, .DCM</p>
+<input class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" type="file"/>
+</div>
+<!-- Status Display -->
+<div class="mt-4 flex items-center justify-between border border-technical-gray bg-[#0a0a0c] p-2">
+<div class="flex items-center gap-2 font-metadata text-metadata">
+<div class="w-2 h-2 rounded-full bg-error animate-pulse"></div>
+<span class="text-on-surface-variant">SCAN_STATUS:</span>
+<span class="text-error uppercase">PENDING_INPUT</span>
+</div>
+</div>
+</div>
+<!-- Submit Action -->
+<div class="mt-auto">
+<button class="w-full bg-primary text-[#0a0a0c] font-label-caps text-label-caps py-4 uppercase tracking-widest hover:bg-primary-fixed-dim transition-all shadow-[0_0_12px_rgba(0,210,255,0.3)] hover:shadow-[0_0_20px_rgba(0,210,255,0.6)] flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]" type="submit">
+<span class="material-symbols-outlined text-[18px]">data_check</span>
+                        COMMIT_TO_MAINFRAME
+                    </button>
+<p class="text-center font-metadata text-metadata text-on-surface-variant mt-3 opacity-50">BY COMMITTING, YOU AGREE TO A.I.D.A.S. DIRECTIVE 4A.</p>
+</div>
+</div>
+</form>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface-charcoal/90 backdrop-blur-md border-t border-glass-border flex justify-around items-center h-16 z-50">
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined mb-1">grid_view</span>
+<span class="font-metadata text-metadata">DASHBOARD</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined mb-1">explore</span>
+<span class="font-metadata text-metadata">MAP</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-primary border-t-2 border-primary bg-primary/5 cursor-pointer" href="#">
+<span class="material-symbols-outlined mb-1">badge</span>
+<span class="font-metadata text-metadata">REGISTER</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined mb-1">shield</span>
+<span class="font-metadata text-metadata">ARSENAL</span>
+</a>
+</nav>
+<script>
+        // Custom styling for range sliders
+        const sliders = document.querySelectorAll('.slider-tech');
+        sliders.forEach(slider => {
+            // Webkit appearance manipulation is tough via raw CSS without external sheets, 
+            // relying on basic background color and inline updates for now.
+            slider.style.background = `linear-gradient(to right, #a5e7ff ${slider.value}%, #2a2d33 ${slider.value}%)`;
+            
+            slider.addEventListener('input', function() {
+                this.style.background = `linear-gradient(to right, #a5e7ff ${this.value}%, #2a2d33 ${this.value}%)`;
+            });
+        });
+
+        // Simple Drag and drop visual feedback
+        const dropZone = document.getElementById('drop-zone');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('drag-active');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('drag-active');
+        }
+    </script>
+</body></html>
+
+<!-- Register Operative | Stark Mission Control -->

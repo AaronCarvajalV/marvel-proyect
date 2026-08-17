@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Holographic Personnel Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#859399",
+                      "surface-tint": "#47d6ff",
+                      "on-tertiary-fixed-variant": "#624000",
+                      "on-error": "#690005",
+                      "inverse-on-surface": "#313032",
+                      "surface-dim": "#131315",
+                      "surface-container-high": "#2a2a2c",
+                      "on-primary-fixed": "#001f28",
+                      "error-container": "#93000a",
+                      "on-tertiary": "#442b00",
+                      "on-primary-container": "#00566a",
+                      "on-primary-fixed-variant": "#004e60",
+                      "primary-fixed": "#b6ebff",
+                      "surface-container-lowest": "#0e0e10",
+                      "on-secondary": "#452b00",
+                      "primary-container": "#00d2ff",
+                      "secondary-container": "#feaa00",
+                      "on-primary": "#003543",
+                      "surface-container": "#201f21",
+                      "technical-gray": "#2a2d33",
+                      "on-tertiary-fixed": "#291800",
+                      "surface-container-highest": "#353437",
+                      "primary": "#a5e7ff",
+                      "on-error-container": "#ffdad6",
+                      "grid-line": "rgba(255, 255, 255, 0.03)",
+                      "on-secondary-fixed-variant": "#624000",
+                      "on-background": "#e5e1e4",
+                      "tertiary": "#ffd79f",
+                      "inverse-surface": "#e5e1e4",
+                      "surface-charcoal": "#121316",
+                      "primary-fixed-dim": "#47d6ff",
+                      "on-tertiary-container": "#6c4700",
+                      "outline-variant": "#3c494e",
+                      "tertiary-fixed": "#ffddb1",
+                      "on-surface": "#e5e1e4",
+                      "tertiary-container": "#ffb229",
+                      "on-secondary-fixed": "#291800",
+                      "tertiary-fixed-dim": "#ffba4a",
+                      "secondary-fixed": "#ffddb3",
+                      "secondary": "#ffcf8f",
+                      "on-secondary-container": "#684300",
+                      "inverse-primary": "#00677f",
+                      "error": "#ffb4ab",
+                      "background": "#131315",
+                      "surface-variant": "#353437",
+                      "glass-border": "rgba(0, 210, 255, 0.2)",
+                      "surface-bright": "#39393b",
+                      "secondary-fixed-dim": "#ffb950",
+                      "on-surface-variant": "#bbc9cf",
+                      "surface": "#131315",
+                      "surface-container-low": "#1c1b1d"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1440px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "32px",
+                      "gutter": "16px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "metadata": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-caps": [
+                              "JetBrains Mono"
+                      ],
+                      "body-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "data-mono": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "metadata": [
+                              "10px",
+                              {
+                                      "lineHeight": "12px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+      </script>
+<style>
+        .precision-grid {
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .hud-border {
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 0 10px rgba(0, 210, 255, 0.05);
+        }
+        .hud-border-active {
+            border: 1px solid #47d6ff;
+            box-shadow: 0 0 4px rgba(0, 210, 255, 0.4), inset 0 0 10px rgba(0, 210, 255, 0.1);
+        }
+        .text-glow {
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
+        }
+        .alert-glow {
+            text-shadow: 0 0 8px rgba(254, 170, 0, 0.6);
+        }
+        .scan-line {
+            background: linear-gradient(to right, transparent, rgba(0, 210, 255, 0.5), transparent);
+            height: 1px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen overflow-x-hidden antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 backdrop-blur-xl border-b border-glass-border shadow-[0_0_15px_rgba(0,210,255,0.1)] bg-surface-charcoal/80 dark:bg-surface-charcoal/80">
+<div class="flex justify-between items-center w-full px-margin-desktop py-unit max-w-container-max mx-auto h-16">
+<div class="flex items-center gap-6">
+<div class="font-display-lg text-headline-lg-mobile md:text-headline-lg tracking-tighter text-primary animate-pulse">
+                    A.R.K.O.S_HUD
+                </div>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-6 font-data-mono text-data-mono uppercase">
+<a class="text-on-surface-variant font-medium hover:text-primary-container hover:bg-white/5 transition-colors px-3 py-2 rounded-DEFAULT active:scale-95 duration-75" href="#">DASHBOARD</a>
+<a class="text-primary font-bold border-b border-primary px-3 py-2 active:scale-95 duration-75" href="#">PERSONNEL</a>
+<a class="text-on-surface-variant font-medium hover:text-primary-container hover:bg-white/5 transition-colors px-3 py-2 rounded-DEFAULT active:scale-95 duration-75" href="#">OPERATIONS</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-64 bg-surface-container-lowest border border-outline-variant focus:border-primary text-primary font-data-mono text-data-mono rounded-DEFAULT pl-9 pr-3 py-1.5 focus:outline-none focus:ring-0 transition-colors placeholder:text-on-surface-variant/50" placeholder="QUERY_DATABASE" type="text"/>
+</div>
+<button class="text-on-surface-variant hover:text-primary-container hover:bg-white/5 transition-colors p-2 rounded-DEFAULT active:scale-95 duration-75">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings_input_component</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary-container hover:bg-white/5 transition-colors p-2 rounded-DEFAULT active:scale-95 duration-75">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">terminal</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary-container hover:bg-white/5 transition-colors p-2 rounded-DEFAULT active:scale-95 duration-75">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">sensors</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="relative min-h-screen pt-20 pb-margin-desktop px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto z-10 flex flex-col lg:flex-row gap-6">
+<!-- Background Animation -->
+<!-- STITCH_THREEJS_START:ANIMATION_12 class="fixed inset-0 w-full h-full -z-10 opacity-30" -->
+<div class="fixed inset-0 w-full h-full -z-10 opacity-30" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_12" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_12');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const width = container.clientWidth || window.innerWidth;
+const height = container.clientHeight || window.innerHeight;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+camera.position.z = 5;
+
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setSize(width, height);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
+
+const particleCount = 1500;
+const positions = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
+
+const colorCyan = new THREE.Color(0x00d2ff);
+const colorAmber = new THREE.Color(0xffab00);
+const colorWhite = new THREE.Color(0xffffff);
+
+for (let i = 0; i < particleCount; i++) {
+    // Position
+    positions[i * 3] = (Math.random() - 0.5) * 15;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 15;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 15;
+
+    // Color
+    let pColor;
+    const r = Math.random();
+    if (r < 0.7) {
+        pColor = colorCyan;
+    } else if (r < 0.9) {
+        pColor = colorWhite;
+    } else {
+        pColor = colorAmber;
+    }
+    
+    colors[i * 3] = pColor.r;
+    colors[i * 3 + 1] = pColor.g;
+    colors[i * 3 + 2] = pColor.b;
+}
+
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+const material = new THREE.PointsMaterial({
+    size: 0.02,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.4,
+    sizeAttenuation: true
+});
+
+const particles = new THREE.Points(geometry, material);
+scene.add(particles);
+
+function animate() {
+    requestAnimationFrame(animate);
+    particles.rotation.y += 0.0005;
+    particles.rotation.x += 0.0002;
+    renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+    const w = container.clientWidth || window.innerWidth;
+    const h = container.clientHeight || window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+});
+
+animate();
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_12 -->
+<!-- Precision Grid Overlay -->
+<div class="fixed inset-0 precision-grid -z-10 pointer-events-none"></div>
+<!-- Left Column: Holographic Profile -->
+<div class="w-full lg:w-5/12 flex flex-col gap-6">
+<div class="relative w-full aspect-[3/4] bg-surface-charcoal/80 backdrop-blur-md rounded-lg hud-border overflow-hidden group">
+<!-- Scan Line Animation -->
+<div class="absolute top-0 left-0 w-full h-full pointer-events-none z-20 flex flex-col justify-between p-4">
+<div class="flex justify-between items-start">
+<span class="font-metadata text-metadata text-primary bg-primary/10 px-2 py-1 rounded-DEFAULT border border-glass-border">ID: AX-7749-V</span>
+<div class="flex gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/30"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/30"></div>
+</div>
+</div>
+<div class="flex justify-between items-end">
+<div class="font-data-mono text-data-mono text-on-surface-variant">
+                            CLASS: <span class="text-primary">INFILTRATOR</span>
+</div>
+<span class="material-symbols-outlined text-primary/50 text-xl group-hover:text-primary transition-colors">fingerprint</span>
+</div>
+</div>
+<div class="absolute top-1/4 left-0 w-full scan-line z-20 animate-[scan_3s_ease-in-out_infinite]"></div>
+<img alt="Operative Profile" class="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-luminosity filter contrast-125" data-alt="A highly detailed, cinematic cyberpunk portrait of a futuristic covert operative in tactical stealth gear. The operative is illuminated by cool blue and cyan holographic light in a darkened, high-tech command center environment. The mood is tense, professional, and sophisticated, reflecting a high-end sci-fi HUD aesthetic with deep blacks and vibrant neon cyan accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9VRvV6dkrZIwUxmVumjm_bnhapt2aUbmMd7OTf4RapUAx6f1teITuMDmYqQBm9WGvF5ZRhECCH1Ornn_1GegyXOiGsORjM-YUnFl2afkzzfEDDDjLkUJ2UezbWRLzGLzKzsuhg8pRLuc7p8ycP8a2CCQWBIp3ERTO5k_3rDIMrC9j1Z0Dqz8PBQSLLF1wHMJqzExA7q9HUuaJCbABVp_WAzoOIrbehz8X3oyYB8lWyNFPhIvLbGgb"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-charcoal via-transparent to-surface-charcoal/40 z-10"></div>
+</div>
+<!-- Threat Assessment Card -->
+<div class="bg-surface-charcoal/90 backdrop-blur-lg rounded-lg hud-border p-6 flex flex-col gap-4">
+<div class="flex items-center gap-2 border-b border-glass-border pb-2">
+<span class="material-symbols-outlined text-secondary-container text-sm">warning</span>
+<h3 class="font-data-mono text-data-mono text-secondary-container">THREAT_ASSESSMENT</h3>
+</div>
+<div class="flex items-end justify-between">
+<div>
+<div class="font-display-lg text-headline-lg-mobile md:text-headline-lg text-on-surface alert-glow">LEVEL_ALPHA</div>
+<div class="font-metadata text-metadata text-on-surface-variant mt-1">LETHAL_RESPONSE_AUTHORIZED</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="text-secondary-container font-data-mono text-data-mono">98.4%</div>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full overflow-hidden border border-glass-border">
+<div class="h-full bg-secondary-container w-[98.4%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Data & Actions -->
+<div class="w-full lg:w-7/12 flex flex-col gap-6">
+<!-- Header Area -->
+<div class="flex flex-col gap-2 border-b border-glass-border pb-4">
+<div class="font-data-mono text-data-mono text-primary flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    OPERATIVE_PROFILE
+                </div>
+<h1 class="font-display-lg text-[40px] md:text-display-lg text-on-surface leading-none tracking-tight">Kaelen <span class="text-primary text-glow">"GHOST"</span> Vance</h1>
+<div class="font-body-sm text-body-sm text-on-surface-variant max-w-2xl mt-2">
+                    Elite specialist in deep-cover infiltration and tactical sabotage. Extensive cybernetic augments localized to neural processing and optical cloaking arrays. Currently unassigned.
+                </div>
+</div>
+<!-- Grid Layout for Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Bio Stats -->
+<div class="bg-surface-charcoal/80 backdrop-blur-lg rounded-lg hud-border p-5 flex flex-col gap-4">
+<div class="flex items-center gap-2 border-b border-glass-border pb-2">
+<span class="material-symbols-outlined text-primary text-sm">monitor_heart</span>
+<h3 class="font-data-mono text-data-mono text-primary">BIO_STATS</h3>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Stat Row -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-metadata text-metadata">
+<span class="text-on-surface-variant">NEURAL_SYNC</span>
+<span class="text-primary">92.4%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest border border-glass-border/50">
+<div class="h-full bg-primary w-[92.4%]"></div>
+</div>
+</div>
+<!-- Stat Row -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-metadata text-metadata">
+<span class="text-on-surface-variant">CLOAKING_RESERVE</span>
+<span class="text-primary">85.0%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest border border-glass-border/50">
+<div class="h-full bg-primary w-[85%]"></div>
+</div>
+</div>
+<!-- Stat Row -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-metadata text-metadata">
+<span class="text-on-surface-variant">CORTICAL_STRESS</span>
+<span class="text-secondary-container">41.2%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest border border-glass-border/50">
+<div class="h-full bg-secondary-container w-[41.2%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Operational Status -->
+<div class="bg-surface-charcoal/80 backdrop-blur-lg rounded-lg hud-border p-5 flex flex-col gap-4">
+<div class="flex items-center gap-2 border-b border-glass-border pb-2">
+<span class="material-symbols-outlined text-primary text-sm">radar</span>
+<h3 class="font-data-mono text-data-mono text-primary">OPERATIONAL_STATUS</h3>
+</div>
+<div class="flex-1 flex flex-col justify-center gap-4">
+<div class="flex items-center gap-3 bg-surface-container-lowest p-3 rounded-DEFAULT border border-glass-border/30">
+<div class="w-3 h-3 rounded-full bg-primary shadow-[0_0_8px_rgba(0,210,255,0.8)]"></div>
+<div>
+<div class="font-label-caps text-label-caps text-on-surface">READY_FOR_DEPLOYMENT</div>
+<div class="font-metadata text-metadata text-on-surface-variant">LOC: SECTOR_7G_ORBITAL</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 font-metadata text-metadata">
+<div class="bg-surface-container-highest p-2 rounded-DEFAULT border border-glass-border/20">
+<span class="text-on-surface-variant block mb-1">CLEARANCE</span>
+<span class="text-primary">LEVEL_5</span>
+</div>
+<div class="bg-surface-container-highest p-2 rounded-DEFAULT border border-glass-border/20">
+<span class="text-on-surface-variant block mb-1">LAST_SYNC</span>
+<span class="text-primary">04:22:11_UTC</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Mission History -->
+<div class="bg-surface-charcoal/80 backdrop-blur-lg rounded-lg hud-border flex flex-col flex-1 overflow-hidden">
+<div class="flex items-center gap-2 border-b border-glass-border p-4 bg-surface-charcoal/90">
+<span class="material-symbols-outlined text-primary text-sm">history</span>
+<h3 class="font-data-mono text-data-mono text-primary">MISSION_HISTORY</h3>
+</div>
+<div class="p-4 flex flex-col gap-2 overflow-y-auto">
+<!-- History Item -->
+<div class="flex items-center justify-between p-3 bg-surface-container-highest/50 border border-glass-border/30 rounded-DEFAULT hover:border-primary/50 hover:bg-white/5 transition-colors cursor-default group">
+<div class="flex items-center gap-4">
+<div class="font-data-mono text-data-mono text-on-surface-variant w-20">OP_ECHO</div>
+<div class="font-body-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">Data Extraction Facility 4</div>
+</div>
+<div class="font-label-caps text-label-caps text-primary bg-primary/10 px-2 py-1 rounded-DEFAULT border border-primary/20">SUCCESS</div>
+</div>
+<!-- History Item -->
+<div class="flex items-center justify-between p-3 bg-surface-container-highest/50 border border-glass-border/30 rounded-DEFAULT hover:border-primary/50 hover:bg-white/5 transition-colors cursor-default group">
+<div class="flex items-center gap-4">
+<div class="font-data-mono text-data-mono text-on-surface-variant w-20">OP_NULL</div>
+<div class="font-body-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">Target Neutralization</div>
+</div>
+<div class="font-label-caps text-label-caps text-primary bg-primary/10 px-2 py-1 rounded-DEFAULT border border-primary/20">SUCCESS</div>
+</div>
+<!-- History Item -->
+<div class="flex items-center justify-between p-3 bg-surface-container-highest/50 border border-glass-border/30 rounded-DEFAULT hover:border-primary/50 hover:bg-white/5 transition-colors cursor-default group">
+<div class="flex items-center gap-4">
+<div class="font-data-mono text-data-mono text-on-surface-variant w-20">OP_VOID</div>
+<div class="font-body-sm text-body-sm text-on-surface group-hover:text-primary transition-colors">Asset Recovery</div>
+</div>
+<div class="font-label-caps text-label-caps text-secondary-container bg-secondary-container/10 px-2 py-1 rounded-DEFAULT border border-secondary-container/20">PARTIAL</div>
+</div>
+</div>
+</div>
+<!-- Action Area -->
+<div class="mt-auto flex justify-end pt-4 border-t border-glass-border">
+<button class="bg-primary text-surface-container-lowest font-label-caps text-label-caps px-8 py-4 rounded-DEFAULT hover:bg-primary-container hover:shadow-[0_0_15px_rgba(0,210,255,0.6)] transition-all active:scale-95 flex items-center gap-2 group">
+<span class="material-symbols-outlined text-sm group-hover:rotate-12 transition-transform">rocket_launch</span>
+                    DEPLOY_OPERATIVE
+                </button>
+</div>
+</div>
+</main>
+<style>
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+    </style>
+</body></html>
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-08-15T21:38:30-05:00.
+
+The user has mentioned some items in the form @[ITEM]. Here is extra information about the items that were mentioned by the user, in the order that they appear:
+
+/ui-ux-pro-max is a [Slash Command]:
+<SKILL>The user requested you read and use the "ui-ux-pro-max" skill. The path to the skill file is:
+/Users/aaroncarvajal/.gemini/config/plugins/second-brain/skills/ui-ux-pro-max/SKILL.md</SKILL>
+/modern-web-guidance is a [Slash Command]:
+<SKILL>The user requested you read and use the "modern-web-guidance" skill. The path to the skill file is:
+/Users/aaroncarvajal/.gemini/config/plugins/modern-web-guidance-plugin/skills/modern-web-guidance/SKILL.md</SKILL>
+</ADDITIONAL_METADATA>
