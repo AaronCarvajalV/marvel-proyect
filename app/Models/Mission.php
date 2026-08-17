@@ -15,7 +15,7 @@ class Mission extends Model
     protected $fillable = [
         'titulo',
         'descripcion',
-        'ubicacion',
+        'target_location_id',
         'fecha',
         'nivel_peligro',
         'estado',
@@ -27,6 +27,7 @@ class Mission extends Model
         return [
             'fecha' => 'date:Y-m-d',
             'superheroe_id' => 'integer',
+            'target_location_id' => 'integer',
         ];
     }
 
@@ -36,5 +37,13 @@ class Mission extends Model
     public function hero(): BelongsTo
     {
         return $this->belongsTo(Hero::class, 'superheroe_id');
+    }
+
+    /**
+     * Get the target location assigned to this mission.
+     */
+    public function targetLocation(): BelongsTo
+    {
+        return $this->belongsTo(TargetLocation::class, 'target_location_id');
     }
 }

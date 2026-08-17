@@ -233,7 +233,7 @@ class AdversarialEdgeCaseTest extends TestCase
             ->postJson('/api/misiones', [
                 'titulo' => 'Orphan Mission',
                 'descripcion' => 'Should fail due to invalid FK',
-                'ubicacion' => 'Nowhere',
+                'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
                 'fecha' => '2026-10-10',
                 'nivel_peligro' => 'MEDIO',
                 'estado' => 'PENDIENTE',
@@ -257,7 +257,7 @@ class AdversarialEdgeCaseTest extends TestCase
         $mission = Mission::create([
             'titulo' => 'Valid Mission',
             'descripcion' => 'Initial',
-            'ubicacion' => 'Brooklyn',
+            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
             'fecha' => '2026-10-10',
             'nivel_peligro' => 'MEDIO',
             'estado' => 'PENDIENTE',
@@ -286,7 +286,7 @@ class AdversarialEdgeCaseTest extends TestCase
         $mission1 = Mission::create([
             'titulo' => 'Mystic Mission 1',
             'descripcion' => 'Seal rift 1',
-            'ubicacion' => 'Sanctum 1',
+            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
             'fecha' => '2026-10-01',
             'nivel_peligro' => 'ALTO',
             'estado' => 'PENDIENTE',
@@ -296,7 +296,7 @@ class AdversarialEdgeCaseTest extends TestCase
         $mission2 = Mission::create([
             'titulo' => 'Mystic Mission 2',
             'descripcion' => 'Seal rift 2',
-            'ubicacion' => 'Sanctum 2',
+            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
             'fecha' => '2026-10-02',
             'nivel_peligro' => 'ALTO',
             'estado' => 'EN_PROGRESO',
@@ -381,7 +381,7 @@ class AdversarialEdgeCaseTest extends TestCase
             ->postJson('/api/misiones', [
                 'titulo' => 'Consulta Mission',
                 'descripcion' => 'Blocked',
-                'ubicacion' => 'Microverse',
+                'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
                 'fecha' => '2026-11-01',
                 'nivel_peligro' => 'BAJO',
                 'estado' => 'PENDIENTE',
@@ -404,7 +404,7 @@ class AdversarialEdgeCaseTest extends TestCase
         $mission = Mission::create([
             'titulo' => 'Micro Mission',
             'descripcion' => 'Desc',
-            'ubicacion' => 'Lab',
+            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
             'fecha' => '2026-11-01',
             'nivel_peligro' => 'BAJO',
             'estado' => 'PENDIENTE',
@@ -432,7 +432,7 @@ class AdversarialEdgeCaseTest extends TestCase
         $mission = Mission::create([
             'titulo' => 'Aerial Recon',
             'descripcion' => 'Recon',
-            'ubicacion' => 'Sky',
+            'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
             'fecha' => '2026-11-01',
             'nivel_peligro' => 'BAJO',
             'estado' => 'PENDIENTE',
@@ -579,7 +579,7 @@ class AdversarialEdgeCaseTest extends TestCase
             ->postJson('/api/misiones', [
                 'titulo' => 'Bad Enum Mission',
                 'descripcion' => 'Testing enums',
-                'ubicacion' => 'Sokovia',
+                'target_location_id' => \App\Models\TargetLocation::factory()->create()->id,
                 'fecha' => '2026-12-01',
                 'nivel_peligro' => 'EXTREMO', // Invalid enum
                 'estado' => 'CANCELADA', // Invalid enum
