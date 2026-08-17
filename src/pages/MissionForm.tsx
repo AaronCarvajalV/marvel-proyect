@@ -1,16 +1,96 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { missionService, type CreateMissionData } from '../services/missionService';
+import { heroService, type Hero } from '../services/heroService';
+import { targetLocationService, type TargetLocation } from '../services/targetLocationService';
 
 export const MissionForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
-  const [threatLevel, setThreatLevel] = useState('omega');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    navigate('/missions');
+  const [formData, setFormData] = useState<CreateMissionData>({
+    titulo: '',
+    descripcion: '',
+    target_location_id: 1, // Defaulting to first location or null if you prefer, wait I need to make it a number. It can be 1 by default, or empty if we make it nullable. Let's make it 1 initially, but updated once locations load. Or 0 and force user to select.
+    fecha: new Date().toISOString().split('T')[0],
+    nivel_peligro: 'MEDIO',
+    estado: 'PENDIENTE',
+    superheroe_id: null,
+  });
+
+  const [heroes, setHeroes] = useState<Hero[]>([]);
+  const [locations, setLocations] = useState<TargetLocation[]>([]);
+  const [isLoading, setIsLoading] = useState(isEditing);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const initForm = async () => {
+      try {
+        const [heroesData, locationsData] = await Promise.all([
+          heroService.getAll(),
+          targetLocationService.getAll()
+        ]);
+        setHeroes(heroesData);
+        setLocations(locationsData);
+        
+        if (!isEditing && locationsData.length > 0) {
+            setFormData(prev => ({ ...prev, target_location_id: locationsData[0].id }));
+        }
+
+        if (isEditing) {
+          const missionData = await missionService.getById(parseInt(id, 10));
+          setFormData({
+            titulo: missionData.titulo,
+            descripcion: missionData.descripcion || '',
+            target_location_id: missionData.target_location_id,
+            fecha: missionData.fecha,
+            nivel_peligro: missionData.nivel_peligro,
+            estado: missionData.estado,
+            superheroe_id: missionData.superheroe_id,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to initialize form", error);
+        navigate('/missions');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initForm();
+  }, [id, isEditing, navigate]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: (name === 'superheroe_id' || name === 'target_location_id') ? (value ? parseInt(value, 10) : null) : value
+    }));
   };
+
+  const handleThreatLevelChange = (level: string) => {
+    setFormData(prev => ({ ...prev, nivel_peligro: level }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      if (isEditing) {
+        await missionService.update(parseInt(id, 10), formData);
+      } else {
+        await missionService.create(formData);
+      }
+      navigate('/missions');
+    } catch (error) {
+      console.error("Failed to save mission", error);
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="max-w-container-max mx-auto text-primary font-data-mono animate-pulse pt-10">ACCESSING_SECURE_RECORDS...</div>;
+  }
 
   return (
     <div className="flex-1 flex flex-col w-full max-w-container-max mx-auto relative z-10 pb-12">
@@ -53,9 +133,10 @@ export const MissionForm: React.FC = () => {
           </button>
           <button 
             onClick={handleSubmit}
-            className="px-4 py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-sm hover:shadow-[0_0_12px_rgba(0,210,255,0.4)] transition-all duration-300 cursor-pointer"
+            disabled={isSaving}
+            className={`px-4 py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-sm transition-all duration-300 ${isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-[0_0_12px_rgba(0,210,255,0.4)] cursor-pointer'}`}
           >
-            {isEditing ? 'UPDATE_PROTOCOL' : 'INITIATE_PROTOCOL'}
+            {isSaving ? 'PROCESSING...' : (isEditing ? 'UPDATE_PROTOCOL' : 'INITIATE_PROTOCOL')}
           </button>
         </div>
       </header>
@@ -79,7 +160,10 @@ export const MissionForm: React.FC = () => {
                 <input 
                   className="w-full bg-surface border border-outline-variant text-on-surface font-body-lg px-4 py-3 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all font-data-mono" 
                   type="text" 
-                  defaultValue="OPERATION NIGHTFALL"
+                  name="titulo"
+                  value={formData.titulo}
+                  onChange={handleChange}
+                  required
                 />
               </div>
               
@@ -88,7 +172,9 @@ export const MissionForm: React.FC = () => {
                 <textarea 
                   className="w-full bg-surface border border-outline-variant text-on-surface-variant font-body-sm px-4 py-3 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all resize-none" 
                   rows={4}
-                  defaultValue="Infiltration and data extraction from facility sector 7G. Avoid detection. Secondary objective: sabotage communication relays."
+                  name="descripcion"
+                  value={formData.descripcion || ''}
+                  onChange={handleChange}
                 ></textarea>
               </div>
               
@@ -97,21 +183,29 @@ export const MissionForm: React.FC = () => {
                   <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">PRIMARY OPERATIVE</label>
                   <select 
                     className="w-full bg-surface border border-outline-variant text-on-surface font-data-mono px-4 py-3 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all appearance-none cursor-pointer"
-                    defaultValue="op-02"
+                    name="superheroe_id"
+                    value={formData.superheroe_id || ''}
+                    onChange={handleChange}
                   >
-                    <option value="op-01">OPERATOR_01 (GHOST)</option>
-                    <option value="op-02">OPERATOR_04 (PHANTOM)</option>
-                    <option value="op-03">OPERATOR_07 (SPECTER)</option>
+                    <option value="">-- UNASSIGNED --</option>
+                    {heroes.map(hero => (
+                      <option key={hero.id} value={hero.id}>{hero.nombre}</option>
+                    ))}
                   </select>
                 </div>
                 
                 <div className="space-y-2 group">
-                  <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">EST. DURATION (HRS)</label>
-                  <input 
-                    className="w-full bg-surface border border-outline-variant text-on-surface font-data-mono px-4 py-3 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all" 
-                    type="number" 
-                    defaultValue="48"
-                  />
+                  <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">STATUS</label>
+                  <select 
+                    className="w-full bg-surface border border-outline-variant text-on-surface font-data-mono px-4 py-3 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all appearance-none cursor-pointer"
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleChange}
+                  >
+                    <option value="PENDIENTE">PENDIENTE</option>
+                    <option value="EN_PROGRESO">EN_PROGRESO</option>
+                    <option value="COMPLETADA">COMPLETADA</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -129,52 +223,50 @@ export const MissionForm: React.FC = () => {
                 <label className="font-metadata text-metadata text-outline uppercase block">CURRENT THREAT LEVEL</label>
                 
                 {/* Custom Radio Group for Threat Level */}
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-4 gap-3">
                   
-                  {/* Level 1: Low (Cyan) */}
+                  {/* BAJO (Low) */}
                   <label className="relative cursor-pointer">
                     <input 
                       className="peer sr-only" 
                       name="threat_level" 
                       type="radio" 
-                      value="low"
-                      checked={threatLevel === 'low'}
-                      onChange={() => setThreatLevel('low')}
+                      value="BAJO"
+                      checked={formData.nivel_peligro === 'BAJO'}
+                      onChange={() => handleThreatLevelChange('BAJO')}
                     />
-                    <div className="w-full py-3 border border-outline-variant text-center rounded-sm peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary text-on-surface-variant font-data-mono text-data-mono transition-all">
-                      ALPHA (LOW)
+                    <div className="w-full py-3 border border-outline-variant text-center rounded-sm peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary text-on-surface-variant font-data-mono text-[10px] transition-all">
+                      LOW
                     </div>
                   </label>
                   
-                  {/* Level 2: Medium (Amber) */}
+                  {/* MEDIO (Medium) */}
                   <label className="relative cursor-pointer">
                     <input 
                       className="peer sr-only" 
                       name="threat_level" 
                       type="radio" 
-                      value="medium"
-                      checked={threatLevel === 'medium'}
-                      onChange={() => setThreatLevel('medium')}
+                      value="MEDIO"
+                      checked={formData.nivel_peligro === 'MEDIO'}
+                      onChange={() => handleThreatLevelChange('MEDIO')}
                     />
-                    <div className="w-full py-3 border border-outline-variant text-center rounded-sm peer-checked:bg-secondary-container/10 peer-checked:border-secondary-container peer-checked:text-secondary-container text-on-surface-variant font-data-mono text-data-mono transition-all">
-                      BETA (MED)
+                    <div className="w-full py-3 border border-outline-variant text-center rounded-sm peer-checked:bg-primary/10 peer-checked:border-primary peer-checked:text-primary text-on-surface-variant font-data-mono text-[10px] transition-all">
+                      MEDIUM
                     </div>
                   </label>
-                  
-                  {/* Level 3: High/Omega (Red/Error) */}
+
+                  {/* ALTO (High) */}
                   <label className="relative cursor-pointer">
                     <input 
                       className="peer sr-only" 
                       name="threat_level" 
                       type="radio" 
-                      value="omega"
-                      checked={threatLevel === 'omega'}
-                      onChange={() => setThreatLevel('omega')}
+                      value="ALTO"
+                      checked={formData.nivel_peligro === 'ALTO'}
+                      onChange={() => handleThreatLevelChange('ALTO')}
                     />
-                    <div className="w-full py-3 border border-outline-variant text-center rounded-sm peer-checked:bg-error/10 peer-checked:border-error peer-checked:text-error peer-checked:shadow-[0_0_8px_rgba(255,180,171,0.4)] text-on-surface-variant font-data-mono text-data-mono transition-all relative overflow-hidden">
-                      {/* Amber alert glow effect */}
-                      <div className={`absolute inset-0 bg-error/5 animate-pulse ${threatLevel === 'omega' ? 'block' : 'hidden'}`}></div>
-                      OMEGA (CRIT)
+                    <div className="w-full py-3 border border-outline-variant text-center rounded-sm peer-checked:bg-secondary-container/10 peer-checked:border-secondary-container peer-checked:text-secondary-container text-on-surface-variant font-data-mono text-[10px] transition-all">
+                      HIGH
                     </div>
                   </label>
                   
@@ -195,28 +287,39 @@ export const MissionForm: React.FC = () => {
             
             <div className="p-6 flex-1 flex flex-col space-y-6">
               
-              {/* Coordinates Input */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2 group">
-                  <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">LATITUDE</label>
+                  <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">TARGET LOCATION</label>
                   <div className="relative">
-                    <input 
-                      className="w-full bg-surface border border-outline-variant text-on-surface font-data-mono px-4 py-2 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all pl-8" 
-                      type="text" 
-                      defaultValue="34.0522 N"
-                    />
+                    <select 
+                      className="w-full bg-surface border border-outline-variant text-on-surface font-data-mono px-4 py-2 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all pl-8 appearance-none cursor-pointer" 
+                      name="target_location_id"
+                      value={formData.target_location_id}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="" disabled>-- SELECT LOCATION --</option>
+                      {locations.map(loc => (
+                        <option key={loc.id} value={loc.id}>
+                          {loc.city}, {loc.country} ({loc.country_code})
+                        </option>
+                      ))}
+                    </select>
                     <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline-variant text-[16px]">location_on</span>
                   </div>
                 </div>
                 <div className="space-y-2 group">
-                  <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">LONGITUDE</label>
+                  <label className="font-metadata text-metadata text-outline uppercase group-focus-within:text-primary transition-colors block">DATE</label>
                   <div className="relative">
                     <input 
                       className="w-full bg-surface border border-outline-variant text-on-surface font-data-mono px-4 py-2 rounded-sm focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all pl-8" 
-                      type="text" 
-                      defaultValue="118.2437 W"
+                      type="date" 
+                      name="fecha"
+                      value={formData.fecha}
+                      onChange={handleChange}
+                      required
                     />
-                    <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline-variant text-[16px]">location_on</span>
+                    <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline-variant text-[16px]">calendar_today</span>
                   </div>
                 </div>
               </div>

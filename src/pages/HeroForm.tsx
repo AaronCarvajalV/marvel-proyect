@@ -1,36 +1,74 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { heroService, type CreateHeroData } from '../services/heroService';
 
 export const HeroForm: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditing = !!id;
   
-  const [combat, setCombat] = useState(85);
-  const [stealth, setStealth] = useState(60);
-  const [tech, setTech] = useState(92);
-  
-  const [dragActive, setDragActive] = useState(false);
+  const [formData, setFormData] = useState<CreateHeroData>({
+    nombre: '',
+    nombre_real: '',
+    poder_principal: '',
+    nivel_poder: 50,
+    imagen_url: '',
+    estado: 'ACTIVO',
+  });
 
-  const handleDrag = (e: React.DragEvent) => {
+  const [isLoading, setIsLoading] = useState(isEditing);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const initForm = async () => {
+      if (isEditing) {
+        try {
+          const heroData = await heroService.getById(parseInt(id, 10));
+          setFormData({
+            nombre: heroData.nombre,
+            nombre_real: heroData.nombre_real || '',
+            poder_principal: heroData.poder_principal,
+            nivel_poder: heroData.nivel_poder,
+            imagen_url: heroData.imagen_url || '',
+            estado: heroData.estado,
+          });
+        } catch (error) {
+          console.error("Failed to initialize hero form", error);
+          navigate('/heroes');
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+    initForm();
+  }, [id, isEditing, navigate]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
+    setIsSaving(true);
+    try {
+      if (isEditing) {
+        await heroService.update(parseInt(id, 10), formData);
+      } else {
+        await heroService.create(formData);
+      }
+      navigate('/heroes');
+    } catch (error) {
+      console.error("Failed to save operative", error);
+      setIsSaving(false);
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simulate submission and redirect back to heroes list
-    navigate('/heroes');
-  };
+  if (isLoading) {
+    return <div className="max-w-container-max mx-auto text-primary font-data-mono animate-pulse pt-10">ACCESSING_SECURE_RECORDS...</div>;
+  }
 
   return (
     <>
@@ -45,10 +83,6 @@ export const HeroForm: React.FC = () => {
           .tech-input:focus ~ .input-glow {
               color: #a5e7ff;
               text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
-          }
-          .drag-active {
-              border-color: #a5e7ff !important;
-              background-color: rgba(0, 210, 255, 0.1) !important;
           }
           .slider-tech {
             -webkit-appearance: none;
@@ -78,15 +112,28 @@ export const HeroForm: React.FC = () => {
 
       <div className="max-w-container-max mx-auto pb-12 w-full relative z-10">
         {/* Header */}
-        <div className="mb-8 border-b border-glass-border pb-4 relative">
-          <div className="absolute bottom-0 left-0 h-[1px] w-1/3 bg-primary/50" style={{boxShadow: "0 0 8px rgba(0, 210, 255, 0.8)"}}></div>
-          <h1 className="font-display-lg text-display-lg md:text-display-lg text-on-surface mb-2 tracking-tight">REGISTER_OPERATIVE</h1>
-          <div className="flex items-center gap-4 text-on-surface-variant font-data-mono text-data-mono">
-            <span className="flex items-center gap-1 text-primary">
-              <span className="material-symbols-outlined text-[16px]">fingerprint</span> SECURE_UPLINK
-            </span>
-            <span>//</span>
-            <span>PERSONNEL DOSSIER INITIALIZATION</span>
+        <div className="mb-8 border-b border-glass-border pb-4 flex justify-between items-end relative">
+          <div>
+            <div className="absolute bottom-0 left-0 h-[1px] w-1/3 bg-primary/50" style={{boxShadow: "0 0 8px rgba(0, 210, 255, 0.8)"}}></div>
+            <h1 className="font-display-lg text-display-lg md:text-display-lg text-on-surface mb-2 tracking-tight uppercase">
+              {isEditing ? 'UPDATE_OPERATIVE' : 'REGISTER_OPERATIVE'}
+            </h1>
+            <div className="flex items-center gap-4 text-on-surface-variant font-data-mono text-data-mono">
+              <span className="flex items-center gap-1 text-primary">
+                <span className="material-symbols-outlined text-[16px]">fingerprint</span> SECURE_UPLINK
+              </span>
+              <span>//</span>
+              <span>PERSONNEL DOSSIER INITIALIZATION</span>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button 
+              type="button"
+              onClick={() => navigate('/heroes')}
+              className="px-4 py-2 border border-outline-variant text-on-surface-variant font-label-caps text-label-caps rounded-sm hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer"
+            >
+              DISCARD
+            </button>
           </div>
         </div>
 
@@ -107,21 +154,52 @@ export const HeroForm: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="relative flex flex-col group">
                   <label className="font-metadata text-metadata text-on-surface-variant uppercase mb-1 group-focus-within:text-primary transition-colors">DESIGNATION (CALLSIGN)</label>
-                  <input className="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full transition-all" placeholder="E.G. SPECTER_09" required type="text"/>
+                  <input 
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    className="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full transition-all" 
+                    placeholder="E.G. SPECTER_09" 
+                    required 
+                    type="text"
+                  />
                 </div>
                 
                 <div className="relative flex flex-col group">
                   <label className="font-metadata text-metadata text-on-surface-variant uppercase mb-1 group-focus-within:text-primary transition-colors">LEGAL IDENTIFIER (REAL NAME)</label>
-                  <input className="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full transition-all" placeholder="REDACTED_BY_DEFAULT" type="text"/>
+                  <input 
+                    name="nombre_real"
+                    value={formData.nombre_real || ''}
+                    onChange={handleChange}
+                    className="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full transition-all" 
+                    placeholder="REDACTED_BY_DEFAULT" 
+                    type="text"
+                  />
+                </div>
+
+                <div className="relative flex flex-col group md:col-span-2">
+                  <label className="font-metadata text-metadata text-on-surface-variant uppercase mb-1 group-focus-within:text-primary transition-colors">PRIMARY POWER / ABILITY</label>
+                  <input 
+                    name="poder_principal"
+                    value={formData.poder_principal}
+                    onChange={handleChange}
+                    className="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full transition-all" 
+                    placeholder="E.G. ELECTROMAGNETIC PULSE GENERATION" 
+                    required 
+                    type="text"
+                  />
                 </div>
                 
                 <div className="relative flex flex-col group md:col-span-2">
-                  <label className="font-metadata text-metadata text-on-surface-variant uppercase mb-1 group-focus-within:text-primary transition-colors">CLEARANCE LEVEL</label>
-                  <select className="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full appearance-none transition-all cursor-pointer">
-                    <option value="1">LEVEL 1 - STANDARD INFILTRATION</option>
-                    <option value="2">LEVEL 2 - TACTICAL COMMAND</option>
-                    <option value="3">LEVEL 3 - STRATEGIC OVERSIGHT</option>
-                    <option value="4">LEVEL 4 - OMNI_ACCESS (RESTRICTED)</option>
+                  <label className="font-metadata text-metadata text-on-surface-variant uppercase mb-1 group-focus-within:text-primary transition-colors">OPERATIVE STATUS</label>
+                  <select 
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleChange}
+                    className="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full appearance-none transition-all cursor-pointer"
+                  >
+                    <option value="ACTIVO">ACTIVO - READY FOR DEPLOYMENT</option>
+                    <option value="INACTIVO">INACTIVO - STANDBY / RECOVERY</option>
                   </select>
                   <span className="material-symbols-outlined absolute right-3 top-7 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
                 </div>
@@ -132,48 +210,26 @@ export const HeroForm: React.FC = () => {
             <div className="bg-surface-charcoal/80 border border-technical-gray p-6 relative">
               <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-primary"></div>
               
-              <div className="flex items-center gap-2 mb-6 border-b border-technical-gray pb-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
-                <h2 className="font-data-mono text-data-mono text-primary uppercase tracking-widest">METRIC_CALIBRATION</h2>
+              <div className="flex items-center justify-between mb-6 border-b border-technical-gray pb-2">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
+                  <h2 className="font-data-mono text-data-mono text-primary uppercase tracking-widest">METRIC_CALIBRATION</h2>
+                </div>
+                <div className="font-data-mono text-data-mono text-on-surface">
+                  PWR_LEVEL: <span className="text-primary">{formData.nivel_poder}</span>
+                </div>
               </div>
               
               <div className="flex flex-col gap-6">
-                {/* Slider 1 */}
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between font-metadata text-metadata uppercase">
-                    <span className="text-on-surface-variant">COMBAT_PROBABILITY</span>
-                    <span className="text-primary">{combat}%</span>
+                    <span className="text-on-surface-variant">POWER_LEVEL</span>
+                    <span className="text-primary">{formData.nivel_poder}%</span>
                   </div>
                   <input 
                     className="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer outline-none slider-tech" 
-                    max="100" min="0" type="range" value={combat} onChange={(e) => setCombat(parseInt(e.target.value))}
-                    style={{ background: `linear-gradient(to right, #a5e7ff ${combat}%, #2a2d33 ${combat}%)` }}
-                  />
-                </div>
-                
-                {/* Slider 2 */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex justify-between font-metadata text-metadata uppercase">
-                    <span className="text-on-surface-variant">STEALTH_QUOTIENT</span>
-                    <span className="text-primary">{stealth}%</span>
-                  </div>
-                  <input 
-                    className="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer outline-none slider-tech" 
-                    max="100" min="0" type="range" value={stealth} onChange={(e) => setStealth(parseInt(e.target.value))}
-                    style={{ background: `linear-gradient(to right, #a5e7ff ${stealth}%, #2a2d33 ${stealth}%)` }}
-                  />
-                </div>
-                
-                {/* Slider 3 */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex justify-between font-metadata text-metadata uppercase">
-                    <span className="text-on-surface-variant">TECH_APTITUDE</span>
-                    <span className="text-primary">{tech}%</span>
-                  </div>
-                  <input 
-                    className="w-full h-1 bg-surface-container-highest appearance-none cursor-pointer outline-none slider-tech" 
-                    max="100" min="0" type="range" value={tech} onChange={(e) => setTech(parseInt(e.target.value))}
-                    style={{ background: `linear-gradient(to right, #a5e7ff ${tech}%, #2a2d33 ${tech}%)` }}
+                    max="100" min="0" type="range" name="nivel_poder" value={formData.nivel_poder} onChange={handleChange}
+                    style={{ background: `linear-gradient(to right, #a5e7ff ${formData.nivel_poder}%, #2a2d33 ${formData.nivel_poder}%)` }}
                   />
                 </div>
               </div>
@@ -189,35 +245,41 @@ export const HeroForm: React.FC = () => {
               <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-primary"></div>
               
               <div className="flex items-center gap-2 mb-4 border-b border-technical-gray pb-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">scanner</span>
-                <h2 className="font-data-mono text-data-mono text-primary uppercase tracking-widest">BIO_SCAN_IMAGE</h2>
+                <span className="material-symbols-outlined text-primary text-[20px]">link</span>
+                <h2 className="font-data-mono text-data-mono text-primary uppercase tracking-widest">ASSET_URL</h2>
               </div>
               
-              {/* Drag and Drop Area */}
-              <div 
-                className={`flex-1 border-2 border-dashed border-technical-gray bg-[#0a0a0c] flex flex-col items-center justify-center p-6 text-center cursor-pointer hover:border-primary transition-colors group relative overflow-hidden ${dragActive ? 'drag-active' : ''}`}
-                onDragEnter={handleDrag}
-                onDragOver={handleDrag}
-                onDragLeave={handleDrag}
-                onDrop={handleDrop}
-              >
-                {/* Grid overlay pattern */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "linear-gradient(#a5e7ff 1px, transparent 1px), linear-gradient(90deg, #a5e7ff 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
-                
-                <span className="material-symbols-outlined text-display-lg text-on-surface-variant mb-4 group-hover:text-primary transition-colors relative z-10" style={{fontVariationSettings: "'FILL' 1"}}>upload_file</span>
-                <p className="font-data-mono text-data-mono text-on-surface mb-2 relative z-10">INITIALIZE UPLOAD SEQUENCE</p>
-                <p className="font-metadata text-metadata text-on-surface-variant relative z-10">DRAG & DROP OR CLICK TO BROWSE</p>
-                <p className="font-metadata text-metadata text-primary mt-4 relative z-10 opacity-70">SUPPORTED_FORMATS: .JPG, .PNG, .DCM</p>
-                
-                <input className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" type="file"/>
+              <div className="relative flex flex-col group mb-4">
+                <label className="font-metadata text-metadata text-on-surface-variant uppercase mb-1 group-focus-within:text-primary transition-colors">IMAGE URL</label>
+                <input 
+                  name="imagen_url"
+                  value={formData.imagen_url || ''}
+                  onChange={handleChange}
+                  className="tech-input bg-[#0a0a0c] border border-technical-gray text-on-surface font-data-mono text-data-mono px-4 py-2 w-full transition-all text-xs" 
+                  placeholder="https://..." 
+                  type="url"
+                />
               </div>
+
+              {formData.imagen_url ? (
+                 <div className="flex-1 border border-technical-gray bg-surface-dim overflow-hidden flex items-center justify-center">
+                    <img src={formData.imagen_url} alt="Operative Preview" className="w-full h-full object-cover opacity-80 mix-blend-luminosity grayscale hover:grayscale-0 transition-all duration-500" />
+                 </div>
+              ) : (
+                <div className="flex-1 border-2 border-dashed border-technical-gray bg-[#0a0a0c] flex flex-col items-center justify-center p-6 text-center group relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "linear-gradient(#a5e7ff 1px, transparent 1px), linear-gradient(90deg, #a5e7ff 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
+                  <span className="material-symbols-outlined text-display-lg text-on-surface-variant mb-4 relative z-10" style={{fontVariationSettings: "'FILL' 1"}}>image</span>
+                  <p className="font-data-mono text-data-mono text-on-surface mb-2 relative z-10">NO IMAGE LINKED</p>
+                  <p className="font-metadata text-metadata text-on-surface-variant relative z-10">PROVIDE URL ABOVE</p>
+                </div>
+              )}
               
               {/* Status Display */}
               <div className="mt-4 flex items-center justify-between border border-technical-gray bg-[#0a0a0c] p-2">
                 <div className="flex items-center gap-2 font-metadata text-metadata">
-                  <div className="w-2 h-2 rounded-full bg-error animate-pulse"></div>
-                  <span className="text-on-surface-variant">SCAN_STATUS:</span>
-                  <span className="text-error uppercase">PENDING_INPUT</span>
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${formData.imagen_url ? 'bg-primary' : 'bg-error'}`}></div>
+                  <span className="text-on-surface-variant">ASSET_STATUS:</span>
+                  <span className={`uppercase ${formData.imagen_url ? 'text-primary' : 'text-error'}`}>{formData.imagen_url ? 'LINK_ESTABLISHED' : 'MISSING_DATA'}</span>
                 </div>
               </div>
             </div>
@@ -225,11 +287,12 @@ export const HeroForm: React.FC = () => {
             {/* Submit Action */}
             <div className="mt-auto">
               <button 
-                className="w-full bg-primary text-[#0a0a0c] font-label-caps text-label-caps py-4 uppercase tracking-widest hover:bg-primary-fixed-dim transition-all shadow-[0_0_12px_rgba(0,210,255,0.3)] hover:shadow-[0_0_20px_rgba(0,210,255,0.6)] flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]" 
+                className={`w-full bg-primary text-[#0a0a0c] font-label-caps text-label-caps py-4 uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-fixed-dim shadow-[0_0_12px_rgba(0,210,255,0.3)] hover:shadow-[0_0_20px_rgba(0,210,255,0.6)] cursor-pointer active:scale-[0.98]'}`}
                 type="submit"
+                disabled={isSaving}
               >
                 <span className="material-symbols-outlined text-[18px]">data_check</span>
-                COMMIT_TO_MAINFRAME
+                {isSaving ? 'COMMITTING...' : 'COMMIT_TO_MAINFRAME'}
               </button>
               <p className="text-center font-metadata text-metadata text-on-surface-variant mt-3 opacity-50">BY COMMITTING, YOU AGREE TO A.I.D.A.S. DIRECTIVE 4A.</p>
             </div>

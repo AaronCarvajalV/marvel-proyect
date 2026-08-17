@@ -6,6 +6,9 @@ import { authService } from '../services/authService';
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -21,12 +24,26 @@ export const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const data = await authService.login({ email, password });
+      let data;
+      if (isRegistering) {
+        if (password !== passwordConfirm) {
+          throw new Error("Passwords do not match");
+        }
+        data = await authService.register({
+          nombre: name,
+          email,
+          password,
+          password_confirmation: passwordConfirm,
+          rol: 'CONSULTA'
+        });
+      } else {
+        data = await authService.login({ email, password });
+      }
       login(data.access_token, data.user);
       navigate(from, { replace: true });
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.message || 'Credenciales inválidas o error de conexión.');
+      setError(err.response?.data?.message || err.message || 'Credenciales inválidas o error de conexión.');
     } finally {
       setIsLoading(false);
     }
@@ -52,25 +69,46 @@ export const Login: React.FC = () => {
           <span className="material-symbols-outlined text-6xl text-on-surface mb-2" style={{ fontVariationSettings: "'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 48" }}>
             all_inclusive
           </span>
-          <h1 className="font-display-lg text-display-lg text-on-surface tracking-tight uppercase">Stark Ind.</h1>
-          <p className="font-metadata text-metadata text-primary mt-2 uppercase tracking-[0.2em]">JARVIS Subsystem Active</p>
+          <h1 className="font-display-lg text-display-lg text-on-surface tracking-tight uppercase">HEROS ORG.</h1>
+          <p className="font-metadata text-metadata text-primary mt-2 uppercase tracking-[0.2em]">{isRegistering ? 'NEW OPERATOR REGISTRATION' : 'Authentication Gateway'}</p>
         </div>
 
         {/* Form Fields */}
         <form className="w-full space-y-6" onSubmit={handleSubmit}>
+          
+          {isRegistering && (
+            <div className="space-y-1">
+              <label className="font-data-mono text-data-mono text-primary flex items-center gap-2" htmlFor="operator_name">
+                <span className="material-symbols-outlined text-sm">person</span>
+                OPERATOR_NAME
+              </label>
+              <input 
+                className="w-full bg-background border border-[#121316] text-on-surface font-data-mono text-data-mono p-3 focus:outline-none focus:border-primary focus:ring-0 input-glow transition-all duration-300 rounded" 
+                id="operator_name" 
+                placeholder="ENTER FULL NAME" 
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isLoading}
+                required={isRegistering}
+              />
+            </div>
+          )}
+
           <div className="space-y-1">
             <label className="font-data-mono text-data-mono text-primary flex items-center gap-2" htmlFor="operator_id">
               <span className="material-symbols-outlined text-sm">badge</span>
-              OPERATOR_ID
+              OPERATOR_ID (EMAIL)
             </label>
             <input 
               className="w-full bg-background border border-[#121316] text-on-surface font-data-mono text-data-mono p-3 focus:outline-none focus:border-primary focus:ring-0 input-glow transition-all duration-300 rounded" 
               id="operator_id" 
               placeholder="ENTER ID SEQUENCE" 
-              type="text"
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
+              required
             />
           </div>
           
@@ -87,8 +125,28 @@ export const Login: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
+              required
             />
           </div>
+
+          {isRegistering && (
+            <div className="space-y-1">
+              <label className="font-data-mono text-data-mono text-primary flex items-center gap-2" htmlFor="passcode_confirm">
+                <span className="material-symbols-outlined text-sm">lock_reset</span>
+                CONFIRM_PASSCODE
+              </label>
+              <input 
+                className="w-full bg-background border border-[#121316] text-on-surface font-data-mono text-data-mono p-3 focus:outline-none focus:border-primary focus:ring-0 input-glow transition-all duration-300 rounded" 
+                id="passcode_confirm" 
+                placeholder="••••••••••••" 
+                type="password"
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                disabled={isLoading}
+                required={isRegistering}
+              />
+            </div>
+          )}
 
           {error && (
             <div className="bg-error-container/20 text-error font-data-mono text-[12px] p-3 rounded border border-error-container/50">
@@ -102,16 +160,24 @@ export const Login: React.FC = () => {
             type="submit"
             disabled={isLoading}
           >
-            {isLoading ? 'AUTHENTICATING...' : 'INITIATE_PROTOCOL'}
+            {isLoading ? 'AUTHENTICATING...' : (isRegistering ? 'REGISTER_OPERATOR' : 'INITIATE_PROTOCOL')}
             {!isLoading && <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>}
           </button>
         </form>
 
-        {/* System Status Footer */}
-        <div className="mt-8 flex items-center gap-2 border border-glass-border rounded bg-primary/10 px-4 py-2">
-          <div className="w-2 h-2 rounded-full bg-primary status-dot"></div>
-          <span className="font-metadata text-metadata text-primary uppercase">SECURE_CONNECTION_ESTABLISHED</span>
+        <div className="mt-4 text-center">
+          <button 
+            onClick={() => {
+              setIsRegistering(!isRegistering);
+              setError('');
+            }}
+            className="font-metadata text-metadata text-primary/70 hover:text-primary transition-colors underline-offset-4 hover:underline"
+            type="button"
+          >
+            {isRegistering ? 'EXISTING_OPERATOR? INITIALIZE_LOGIN' : 'NEW_OPERATOR? REQUEST_ACCESS (CONSULTA)'}
+          </button>
         </div>
+
       </div>
 
       {/* Background Atmospheric Glows */}

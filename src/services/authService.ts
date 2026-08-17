@@ -11,26 +11,53 @@ export interface LoginResponse {
   access_token: string;
 }
 
+import { api } from './api';
+
 export const authService = {
   login: async (credentials: { email: string; password: string }) => {
-    // Mock login delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    if (credentials.email === 'aaron' && credentials.password === '1234') {
-      return {
-        access_token: 'mock-token-xyz',
-        user: { id: 1, name: 'Aaron', email: 'aaron@stark.com', role: 'ADMIN' as const }
-      };
-    }
-    throw new Error('Invalid credentials');
+    const response = await api.post('/auth/login', credentials);
+    // Laravel returns: { success: true, data: { user: {...}, access_token: '...' } }
+    const data = response.data.data;
+    return {
+      access_token: data.access_token,
+      user: {
+        id: data.user.id,
+        name: data.user.nombre,
+        email: data.user.email,
+        role: data.user.rol
+      }
+    };
+  },
+  
+  register: async (credentials: { nombre: string; email: string; password: string; password_confirmation: string; rol?: string }) => {
+    const response = await api.post('/auth/register', credentials);
+    const data = response.data.data;
+    return {
+      access_token: data.access_token,
+      user: {
+        id: data.user.id,
+        name: data.user.nombre,
+        email: data.user.email,
+        role: data.user.rol
+      }
+    };
   },
   
   logout: async () => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { success: true };
+    const response = await api.post('/auth/logout');
+    return response.data;
   },
   
   getMe: async () => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { id: 1, name: 'Aaron', email: 'aaron@stark.com', role: 'ADMIN' as const };
+    const response = await api.get('/auth/me');
+    // Laravel returns: { success: true, data: { id, nombre, email, rol } }
+    // But we expect the frontend User interface, which requires 'name' instead of 'nombre' and 'role' instead of 'rol'
+    const data = response.data.data;
+    return {
+      id: data.id,
+      name: data.nombre,
+      email: data.email,
+      role: data.rol
+    };
   }
 };

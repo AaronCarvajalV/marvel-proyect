@@ -29,11 +29,15 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Token expired or invalid, trigger logout
-      localStorage.removeItem('marvel_token');
-      // A full app reload or event dispatch could be done here to redirect to login
-      window.dispatchEvent(new Event('auth:unauthorized'));
+    if (error.response) {
+      if (error.response.status === 401) {
+        // Token expired or invalid, trigger logout
+        localStorage.removeItem('marvel_token');
+        // A full app reload or event dispatch could be done here to redirect to login
+        window.dispatchEvent(new Event('auth:unauthorized'));
+      } else if (error.response.status === 403) {
+        alert('ACCESS DENIED: Your clearance level (CONSULTA) does not permit this action.');
+      }
     }
     return Promise.reject(error);
   }

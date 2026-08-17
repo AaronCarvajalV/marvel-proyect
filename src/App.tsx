@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { FavoritesProvider } from './context/FavoritesContext';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { MainLayout } from './components/layout/MainLayout';
 import { Login } from './pages/Login';
@@ -13,7 +14,8 @@ import { MissionForm } from './pages/MissionForm';
 export const App = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <FavoritesProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
           
@@ -24,6 +26,7 @@ export const App = () => {
               <Route path="heroes" element={<HeroNetwork />} />
               <Route path="heroes/new" element={<HeroForm />} />
               <Route path="heroes/:id" element={<HeroDetail />} />
+              <Route path="heroes/:id/edit" element={<HeroForm />} />
               <Route path="missions" element={<MissionList />} />
               <Route path="missions/new" element={<MissionForm />} />
               <Route path="missions/:id/edit" element={<MissionForm />} />
@@ -33,6 +36,7 @@ export const App = () => {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
+      </FavoritesProvider>
     </AuthProvider>
   );
 };

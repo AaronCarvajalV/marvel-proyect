@@ -62,20 +62,8 @@ export const SideNavBar: React.FC = () => {
         </NavLink>
       </div>
 
-      {/* CTA */}
-      <div className="px-6 mb-8">
-        <button className="w-full py-2 border border-primary text-primary font-data-mono text-data-mono rounded-DEFAULT hover:bg-primary hover:text-on-primary transition-colors flex justify-center items-center gap-2 glow-border">
-          <span className="material-symbols-outlined text-sm">sync</span>
-          EXECUTE_SYNC
-        </button>
-      </div>
-
       {/* Footer Tabs */}
       <div className="space-y-1 border-t border-glass-border/50 pt-4">
-        <a className="flex items-center gap-4 text-outline py-3 px-6 hover:text-on-surface-variant hover:bg-technical-gray/50 hover:text-primary-container transition-all" href="#">
-          <span className="material-symbols-outlined text-sm">query_stats</span>
-          <span className="font-data-mono text-data-mono">DIAGNOSTICS</span>
-        </a>
         <button 
           onClick={logout}
           className="w-full flex items-center gap-4 text-outline py-3 px-6 hover:text-on-surface-variant hover:bg-error/20 hover:text-error transition-all group"
